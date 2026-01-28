@@ -48,7 +48,7 @@ export default function VillageStories() {
   return (
     <>
       <motion.div 
-        className="fixed left-8 bottom-32 z-30 max-w-xs"
+        className="fixed left-8 bottom-40 z-30 max-w-xs"
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5 }}
