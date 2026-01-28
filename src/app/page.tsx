@@ -41,7 +41,7 @@ export default function Home() {
         <motion.div 
           className="fixed inset-0 -z-40 bg-black backdrop-blur-sm"
           animate={{ 
-            opacity: currentPrahari.theme === 'light' ? 0.2 : 0.6 
+            opacity: currentPrahari.theme === 'light' ? 0.15 : 0.45 
           }}
           transition={{ duration: 1.5 }}
         />
@@ -50,11 +50,6 @@ export default function Home() {
         <div className="fixed inset-0 pointer-events-none z-10 opacity-[0.03] mix-blend-overlay"
              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
         />
-
-        {/* Debug Content - should be visible if anything works */}
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] text-[10px] opacity-20 uppercase tracking-[0.5em] pointer-events-none">
-          Portal Active
-        </div>
 
         {/* Content Layer - Higher Z-index */}
         <div className="relative z-20">
