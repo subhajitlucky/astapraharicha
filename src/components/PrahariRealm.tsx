@@ -245,7 +245,7 @@ export default function PrahariRealm() {
           A Digital Temple for the 24-Hour Chanting Tradition of
         </p>
         <p className="text-xs md:text-sm text-amber-400/60 mt-1 tracking-wider font-medium">
-          ଚାଢେଇଗାଁ • Chadheigaon Village
+          ଚଢେଇଗାଁ • Chadheigaon Village
         </p>
       </motion.div>
 

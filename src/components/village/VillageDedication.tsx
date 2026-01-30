@@ -37,7 +37,7 @@ export default function VillageDedication() {
                 className='text-lg md:text-2xl font-bold text-amber-100 tracking-wide'
                 style={{ textShadow: '0 2px 10px rgba(251, 191, 36, 0.3)' }}
               >
-                ଚାଢେଇଗାଁ
+                ଚଢେଇଗାଁ
               </motion.h1>
               <p className='text-xs text-white/50 flex items-center justify-center md:justify-start gap-1'>
                 <MapPin className='w-3 h-3' />

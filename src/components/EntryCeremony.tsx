@@ -140,7 +140,7 @@ export default function EntryCeremony() {
               </motion.div>
 
               <h1 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-600 text-spiritual mb-2">
-                ଚାଢେଇଗାଁ
+                ଚଢେଇଗାଁ
               </h1>
               <p className="text-xl md:text-2xl text-white/60 font-medium tracking-wider mb-1">
                 Chadheigaon Village
