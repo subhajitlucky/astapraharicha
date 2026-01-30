@@ -120,23 +120,63 @@ export default function EntryCeremony() {
             ))}
           </div>
 
-          {/* Central Content */}
-          <div className="relative z-10 text-center space-y-12">
+          {/* Central Content - Dedication to Chadheigaon */}
+          <div className="relative z-10 text-center space-y-8 px-4 pt-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.5 }}
             >
-              <h1 className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-600 text-spiritual mb-4">
-                ଆଠ ପ୍ରହରୀ
+              {/* Village Name - Most Prominent */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="mb-2"
+              >
+                <span className="text-sm md:text-base text-amber-400/80 uppercase tracking-[0.3em] font-medium">
+                  Dedicated to
+                </span>
+              </motion.div>
+
+              <h1 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-600 text-spiritual mb-2">
+                ଚାଢେଇଗାଁ
               </h1>
-              <p className="text-white/40 text-lg tracking-[0.4em] uppercase font-light">
-                The Eternal Cycle of Time
+              <p className="text-xl md:text-2xl text-white/60 font-medium tracking-wider mb-1">
+                Chadheigaon Village
+              </p>
+              <p className="text-sm text-white/40 tracking-widest">
+                Puri District, Odisha
+              </p>
+            </motion.div>
+
+            {/* Separator */}
+            <motion.div
+              className="w-24 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 1, delay: 0.5 }}
+            />
+
+            {/* Festival Name */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.5, delay: 0.6 }}
+            >
+              <h2 className="text-4xl md:text-6xl font-bold text-white/90 text-spiritual mb-3">
+                ଆଠ ପ୍ରହରୀ
+              </h2>
+              <p className="text-amber-400/80 text-lg md:text-xl tracking-wider font-light">
+                24-Hour Continuous Chanting Festival
+              </p>
+              <p className="text-white/30 text-sm mt-2 tracking-[0.2em] uppercase">
+                A Sacred Tradition Since Generations
               </p>
             </motion.div>
 
             {/* Progress Mandala */}
-            <div className="relative w-48 h-48 mx-auto">
+            <div className="relative w-40 h-40 md:w-48 md:h-48 mx-auto">
               <div className="absolute inset-0 rounded-full border border-white/10" />
               <motion.div 
                 className="absolute inset-0 rounded-full border-2 border-transparent"
@@ -170,23 +210,34 @@ export default function EntryCeremony() {
               })}
             </div>
 
-            <motion.p 
+            {/* Progress Text with Village Context */}
+            <motion.p
               className="text-white/30 text-sm tracking-widest uppercase"
               animate={{ opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              {progress < 30 && "Purifying space..."}
-              {progress >= 30 && progress < 60 && "Invoking the 8 Prahars..."}
-              {progress >= 60 && progress < 90 && "Aligning temporal currents..."}
-              {progress >= 90 && "Opening the gates..."}
+              {progress < 30 && "Awakening the village temple..."}
+              {progress >= 30 && progress < 60 && "Gathering 8 prahars of devotion..."}
+              {progress >= 60 && progress < 90 && "Uniting villagers worldwide..."}
+              {progress >= 90 && "Opening the digital temple..."}
             </motion.p>
+
+            {/* Village Blessing */}
+            <motion.div
+              className="text-white/20 text-xs tracking-[0.2em]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2 }}
+            >
+              ଜୟ ଜଗନ୍ନାଥ • Jai Jagannath
+            </motion.div>
           </div>
 
-          <button 
+          <button
             onClick={() => setShowCeremony(false)}
-            className="absolute bottom-12 text-xs text-white/20 uppercase tracking-[0.5em] hover:text-white/60 transition-colors"
+            className="absolute bottom-6 md:bottom-12 text-xs text-amber-400/60 hover:text-amber-400 uppercase tracking-[0.5em] transition-colors px-6 py-3 border border-amber-500/30 rounded-full hover:bg-amber-500/10"
           >
-            Enter Sanctuary
+            Enter the Sacred Space
           </button>
         </motion.div>
       )}

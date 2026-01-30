@@ -23,9 +23,9 @@ export default function TempleCorridor() {
 
   return (
     <>
-      {/* Floating Toggle Button */}
+      {/* Floating Toggle Button - Desktop Only */}
       <motion.button
-        className="fixed left-6 bottom-28 md:bottom-28 z-40 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/20 px-4 py-3 rounded-full hover:bg-white/10 transition-colors group"
+        className="fixed left-6 bottom-28 z-40 hidden md:flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/20 px-4 py-3 rounded-full hover:bg-white/10 transition-colors group"
         onClick={() => setIsOpen(true)}
         initial={{ x: -100 }}
         animate={{ x: 0 }}

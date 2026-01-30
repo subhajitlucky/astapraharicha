@@ -14,9 +14,8 @@ interface Particle {
 export default function EmberCursor() {
   const { currentPrahari } = usePrahariStore();
   const [particles, setParticles] = useState<Particle[]>([]);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const particleId = useRef(0);
-  const cursorRef = useRef<HTMLDivElement>(null);
   
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
@@ -25,25 +24,19 @@ export default function EmberCursor() {
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
 
-  // Detect touch device on mount
+  // Mount detection
   useEffect(() => {
-    const checkTouch = () => {
-      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    };
-    checkTouch();
-    window.addEventListener('resize', checkTouch);
-    return () => window.removeEventListener('resize', checkTouch);
+    setMounted(true);
   }, []);
 
+  // Mouse/touch move handler
   useEffect(() => {
-    // Don't track mouse on touch devices
-    if (isTouchDevice) return;
+    if (!mounted) return;
     
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
       
-      // Add particle
       const newParticle: Particle = {
         id: particleId.current++,
         x: e.clientX,
@@ -51,16 +44,38 @@ export default function EmberCursor() {
         life: 1.0
       };
       
-      setParticles(prev => [...prev.slice(-20), newParticle]); // Keep last 20 particles
+      setParticles(prev => [...prev.slice(-20), newParticle]);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        cursorX.set(touch.clientX);
+        cursorY.set(touch.clientY);
+        
+        const newParticle: Particle = {
+          id: particleId.current++,
+          x: touch.clientX,
+          y: touch.clientY,
+          life: 1.0
+        };
+        
+        setParticles(prev => [...prev.slice(-20), newParticle]);
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [cursorX, cursorY, isTouchDevice]);
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [mounted, cursorX, cursorY]);
 
-  // Fade out particles - always run this hook, just don't update if touch device
+  // Fade out particles
   useEffect(() => {
-    if (isTouchDevice) return;
+    if (!mounted) return;
     
     const interval = setInterval(() => {
       setParticles(prev => 
@@ -71,10 +86,9 @@ export default function EmberCursor() {
     }, 50);
     
     return () => clearInterval(interval);
-  }, [isTouchDevice]);
-  
-  // Don't render on touch devices
-  if (isTouchDevice) return null;
+  }, [mounted]);
+
+  if (!mounted) return null;
 
   return (
     <>
@@ -82,14 +96,14 @@ export default function EmberCursor() {
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="fixed pointer-events-none z-[70] rounded-full mix-blend-screen"
+          className="fixed pointer-events-none z-[100] rounded-full"
           style={{
             left: particle.x,
             top: particle.y,
             width: 4 + particle.life * 8,
             height: 4 + particle.life * 8,
             backgroundColor: currentPrahari.colors.accent,
-            opacity: particle.life * 0.6,
+            opacity: particle.life * 0.8,
             boxShadow: `0 0 ${10 * particle.life}px ${currentPrahari.colors.accent}`,
             transform: "translate(-50%, -50%)",
           }}
@@ -101,8 +115,7 @@ export default function EmberCursor() {
       
       {/* Main Cursor Glow */}
       <motion.div
-        ref={cursorRef}
-        className="fixed pointer-events-none z-[71] w-6 h-6 rounded-full mix-blend-difference"
+        className="fixed pointer-events-none z-[100] w-6 h-6 rounded-full"
         style={{
           x: cursorXSpring,
           y: cursorYSpring,
@@ -114,16 +127,17 @@ export default function EmberCursor() {
       
       {/* Outer Ring */}
       <motion.div
-        className="fixed pointer-events-none z-[70] w-12 h-12 rounded-full border border-current opacity-50"
+        className="fixed pointer-events-none z-[99] w-12 h-12 rounded-full border-2"
         style={{
           x: cursorX,
           y: cursorY,
           borderColor: currentPrahari.colors.secondary,
+          opacity: 0.8,
           transform: "translate(-50%, -50%)",
         }}
         animate={{
           scale: [1, 1.5, 1],
-          opacity: [0.5, 0, 0.5],
+          opacity: [0.8, 0.3, 0.8],
         }}
         transition={{
           duration: 2,

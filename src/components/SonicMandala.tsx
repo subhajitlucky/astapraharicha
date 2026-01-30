@@ -115,29 +115,29 @@ export default function SonicMandala() {
   return (
     <motion.button
       onClick={toggleAudio}
-      className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 backdrop-blur-xl px-6 py-3 rounded-full border transition-all group ${
-        currentPrahari.theme === 'light' 
-          ? 'bg-white/40 border-black/10 text-black' 
+      className={`fixed bottom-32 md:bottom-8 left-1/2 -translate-x-1/2 z-[45] flex items-center gap-2 md:gap-4 backdrop-blur-xl px-3 md:px-6 py-2 md:py-3 rounded-full border transition-all group ${
+        currentPrahari.theme === 'light'
+          ? 'bg-white/40 border-black/10 text-black'
           : 'bg-black/40 border-white/10 text-white'
       }`}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      <div className={`relative w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+      <div className={`relative w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full transition-colors ${
         currentPrahari.theme === 'light' ? 'bg-black/5 group-hover:bg-black/10' : 'bg-white/5 group-hover:bg-white/10'
       }`}>
         {isPlaying ? (
-          <Pause className="w-4 h-4" fill="currentColor" />
+          <Pause className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" />
         ) : (
-          <Play className="w-4 h-4 ml-0.5" fill="currentColor" />
+          <Play className="w-3 h-3 md:w-4 md:h-4 ml-0.5" fill="currentColor" />
         )}
       </div>
 
       <div className="flex flex-col items-start">
-        <span className="text-xs md:text-sm uppercase tracking-[0.3em] font-medium">
-          {isPlaying ? 'Sonic Mandala Active' : 'Awaken the Sound'}
+        <span className="text-[10px] md:text-sm uppercase tracking-[0.2em] md:tracking-[0.3em] font-medium">
+          {isPlaying ? 'Sonic Active' : 'Awaken Sound'}
         </span>
-        <span className={`text-xs md:text-xs uppercase tracking-[0.2em] ${currentPrahari.theme === 'light' ? 'text-black/40' : 'text-white/40'}`}>
+        <span className={`hidden md:block text-xs uppercase tracking-[0.2em] ${currentPrahari.theme === 'light' ? 'text-black/40' : 'text-white/40'}`}>
           {currentPrahari.mantra} • {currentPrahari.phase}
         </span>
       </div>

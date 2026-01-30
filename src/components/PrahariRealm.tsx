@@ -44,7 +44,7 @@ export default function PrahariRealm() {
   const secondaryColor = currentPrahari.colors.secondary;
 
   return (
-    <div className={`relative min-h-screen w-full flex items-center justify-center px-4 md:px-20 z-20 ${textColor}`}>
+    <div className={`relative min-h-screen w-full flex items-center justify-center px-4 md:px-20 z-20 pt-20 md:pt-0 ${textColor}`}>
       <AnimatePresence mode="wait">
         <motion.div
           key={currentPrahari.id}
@@ -56,13 +56,28 @@ export default function PrahariRealm() {
         >
           {/* Left: Typography & Info */}
           <div className="space-y-6 text-left relative z-30">
+            {/* Village Dedication Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="border-l-2 border-amber-500/50 pl-4 mb-6"
+            >
+              <p className="text-xs uppercase tracking-[0.3em] text-amber-400/80 mb-1">
+                Chadheigaon Village Presents
+              </p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+                Puri District, Odisha • Since Generations
+              </p>
+            </motion.div>
+
             <motion.div
               className="flex items-center gap-2 mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              <motion.div 
+              <motion.div
                 className="w-2 h-2 rounded-full animate-pulse"
                 style={{ backgroundColor: accentColor }}
                 animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
@@ -219,11 +234,26 @@ export default function PrahariRealm() {
         </motion.div>
       </AnimatePresence>
 
+      {/* Village Dedication Footer */}
+      <motion.div
+        className="fixed bottom-20 left-0 right-0 text-center z-30"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+      >
+        <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-white/30">
+          A Digital Temple for the 24-Hour Chanting Tradition of
+        </p>
+        <p className="text-xs md:text-sm text-amber-400/60 mt-1 tracking-wider font-medium">
+          ଚାଢେଇଗାଁ • Chadheigaon Village
+        </p>
+      </motion.div>
+
       {/* Progress Bar with prahari accent color */}
-      <div className="fixed bottom-8 left-8 right-8 md:left-20 md:right-20 h-1 rounded-full overflow-hidden bg-white/10">
-        <motion.div 
+      <div className="fixed bottom-8 left-8 right-8 md:left-20 md:right-20 h-1 rounded-full overflow-hidden bg-white/10 z-30">
+        <motion.div
           className="h-full transition-all duration-1000 rounded-full"
-          style={{ 
+          style={{
             width: `${(currentPrahari.id / 8) * 100}%`,
             backgroundColor: accentColor,
             boxShadow: `0 0 10px ${accentColor}50`

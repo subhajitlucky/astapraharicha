@@ -53,8 +53,6 @@ export default function PhotoMandala() {
   const { currentPrahari } = usePrahariStore();
 
   const currentPhotos = photoData.filter(p => p.prahariId === currentPrahari.id);
-  
-  if (currentPhotos.length === 0) return null;
 
   return (
     <>
@@ -74,13 +72,13 @@ export default function PhotoMandala() {
         </span>
       </motion.button>
 
-      {/* Mobile Toggle */}
+      {/* Mobile Toggle - Positioned in top-right away from header */}
       <motion.button
-        className="fixed top-24 left-4 z-30 md:hidden w-12 h-12 rounded-full border border-white/20 bg-black/40 backdrop-blur-md flex items-center justify-center"
+        className="fixed top-20 right-4 z-50 md:hidden w-10 h-10 rounded-full border border-white/20 bg-black/60 backdrop-blur-md flex items-center justify-center shadow-lg"
         onClick={() => setIsOpen(true)}
         whileTap={{ scale: 0.95 }}
       >
-        <span className="text-xl">📸</span>
+        <span className="text-lg">📸</span>
       </motion.button>
 
       {/* Gallery Modal */}
@@ -112,36 +110,46 @@ export default function PhotoMandala() {
 
               {/* 3D Floating Gallery */}
               <div className="w-full h-[60vh] relative">
-                <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-                  <ambientLight intensity={0.5} />
-                  {currentPhotos.map((photo, i) => {
-                    // Arrange in a gentle arc
-                    const x = (i - (currentPhotos.length - 1) / 2) * 2;
-                    const z = -Math.abs(x) * 0.5;
-                    return (
-                      <PhotoSphere
-                        key={photo.id}
-                        url={photo.url}
-                        position={[x, 0, z]}
-                        isActive={selectedPhoto?.id === photo.id}
-                        onClick={() => setSelectedPhoto(photo)}
-                      />
-                    );
-                  })}
-                </Canvas>
+                {currentPhotos.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-white/40">
+                    <span className="text-6xl mb-4">📷</span>
+                    <p className="text-lg">No memories captured yet for this prahar</p>
+                    <p className="text-sm text-white/20 mt-2">Be the first to add a photo</p>
+                  </div>
+                ) : (
+                  <>
+                    <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+                      <ambientLight intensity={0.5} />
+                      {currentPhotos.map((photo, i) => {
+                        // Arrange in a gentle arc
+                        const x = (i - (currentPhotos.length - 1) / 2) * 2;
+                        const z = -Math.abs(x) * 0.5;
+                        return (
+                          <PhotoSphere
+                            key={photo.id}
+                            url={photo.url}
+                            position={[x, 0, z]}
+                            isActive={selectedPhoto?.id === photo.id}
+                            onClick={() => setSelectedPhoto(photo)}
+                          />
+                        );
+                      })}
+                    </Canvas>
 
-                {/* 2D Overlay for mobile/desktop fallback */}
-                <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 p-4 overflow-x-auto md:hidden">
-                  {currentPhotos.map((photo) => (
-                    <button
-                      key={photo.id}
-                      onClick={() => setSelectedPhoto(photo)}
-                      className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-white/20 focus:border-amber-500 relative"
-                    >
-                      <NextImage src={photo.url} alt={photo.caption} fill className="object-cover" />
-                    </button>
-                  ))}
-                </div>
+                    {/* 2D Overlay for mobile/desktop fallback */}
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 p-4 overflow-x-auto md:hidden">
+                      {currentPhotos.map((photo) => (
+                        <button
+                          key={photo.id}
+                          onClick={() => setSelectedPhoto(photo)}
+                          className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-white/20 focus:border-amber-500 relative"
+                        >
+                          <NextImage src={photo.url} alt={photo.caption} fill className="object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Selected Photo Detail */}
