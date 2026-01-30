@@ -83,8 +83,8 @@ export default function VillageInfo({ isOpen, onClose }: VillageInfoProps) {
              <h3 className="text-xl font-bold text-white">Asta Prahari Festival</h3>
           </div>
           <p className="text-white/70 leading-relaxed mb-6">
-             Asta Prahari is our village's most important spiritual gathering. "Asta" means eight,
-            and "Prahari" refers to the traditional three-hour time periods. During this 24-hour 
+             Asta Prahari is our village&apos;s most important spiritual gathering. &quot;Asta&quot; means eight,
+            and &quot;Prahari&quot; refers to the traditional three-hour time periods. During this 24-hour 
             festival, the entire village stays awake, chanting, praying, and celebrating together.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -99,7 +99,7 @@ export default function VillageInfo({ isOpen, onClose }: VillageInfoProps) {
               <h4 className="text-amber-300 font-bold mb-2">Community Participation</h4>
               <p className="text-white/60 text-sm">
                 Every family in the village contributes - whether through cooking, decorating, 
-                chanting, or organizing. It's a true community effort.
+                chanting, or organizing. It&apos;s a true community effort.
               </p>
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function VillageInfo({ isOpen, onClose }: VillageInfoProps) {
             Chadheigaon is home to over 500 families who live in harmony and devotion. 
              The Asta Prahari festival is organized entirely by villagers - from the
             youngest children helping with decorations to the elders leading the prayers. 
-            It's a celebration that strengthens our bonds and keeps our traditions alive 
+            It&apos;s a celebration that strengthens our bonds and keeps our traditions alive 
             for future generations.
           </p>
         </section>

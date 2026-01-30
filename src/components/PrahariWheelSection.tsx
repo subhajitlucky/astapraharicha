@@ -1,18 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrahariStore, praharis } from "@/store/prahariStore";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function PrahariWheelSection() {
-  const { currentPrahari, setPrahari } = usePrahariStore();
+  const { setPrahari } = usePrahariStore();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handlePrevious = () => {
     const newIndex = (activeIndex - 1 + 8) % 8;
@@ -81,7 +76,7 @@ export default function PrahariWheelSection() {
                     isActive 
                       ? "bg-amber-500 text-black scale-125 shadow-lg shadow-amber-500/30"
                       : "bg-white/10 text-white/60 hover:bg-white/20"
-                  } ${mounted ? 'md:scale-110' : ''}`}
+                  }`}
                   style={{
                     left: `calc(50% + ${x.toFixed(2)}px - 24px)`,
                     top: `calc(50% + ${y.toFixed(2)}px - 24px)`,

@@ -14,7 +14,6 @@ interface Particle {
 export default function EmberCursor() {
   const { currentPrahari } = usePrahariStore();
   const [particles, setParticles] = useState<Particle[]>([]);
-  const [mounted, setMounted] = useState(false);
   const particleId = useRef(0);
   
   const cursorX = useMotionValue(0);
@@ -24,14 +23,9 @@ export default function EmberCursor() {
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
 
-  // Mount detection
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Mouse/touch move handler
   useEffect(() => {
-    if (!mounted) return;
+    if (typeof window === "undefined") return;
     
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
@@ -71,12 +65,10 @@ export default function EmberCursor() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchmove", handleTouchMove);
     };
-  }, [mounted, cursorX, cursorY]);
+  }, [cursorX, cursorY]);
 
   // Fade out particles
   useEffect(() => {
-    if (!mounted) return;
-    
     const interval = setInterval(() => {
       setParticles(prev => 
         prev
@@ -86,9 +78,7 @@ export default function EmberCursor() {
     }, 50);
     
     return () => clearInterval(interval);
-  }, [mounted]);
-
-  if (!mounted) return null;
+  }, []);
 
   return (
     <>

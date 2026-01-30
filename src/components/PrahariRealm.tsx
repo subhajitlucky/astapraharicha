@@ -10,13 +10,15 @@ export default function PrahariRealm() {
   const { currentPrahari } = usePrahariStore();
   const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
-  const [soulCount, setSoulCount] = useState(0);
+  
+  // Deterministic soul count based on prahari ID - same on server and client
+  // This prevents hydration mismatch while still showing variation between praharis
+  const soulCount = 12 + ((currentPrahari.id * 7) % 40);
 
   useEffect(() => {
     // Avoid cascading renders warning by making state updates asynchronous
     const frame = requestAnimationFrame(() => {
       setMounted(true);
-      setSoulCount(Math.floor(Math.random() * 40) + 12);
     });
     
     // Update CSS variables for global theming

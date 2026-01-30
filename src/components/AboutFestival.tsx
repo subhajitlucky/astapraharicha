@@ -159,7 +159,7 @@ export default function AboutFestival() {
                 </div>
                 
                 <h3 className="text-4xl md:text-5xl font-bold text-white mb-8 leading-tight">
-                  Chadheigaon's
+                  Chadheigaon&apos;s
                   <span className="text-amber-500 block mt-2">Sacred Tradition</span>
                 </h3>
                 
@@ -247,12 +247,12 @@ export default function AboutFestival() {
           viewport={{ once: true, margin: "-100px" }}
         >
           <div className="relative">
-            <div className="text-8xl text-amber-500/20 font-serif absolute -top-8 left-0">"</div>
+            <div className="text-8xl text-amber-500/20 font-serif absolute -top-8 left-0">&quot;</div>
             <blockquote className="text-3xl md:text-4xl lg:text-5xl font-light text-white/80 leading-relaxed italic">
               When the whole village chants as one, 
               <span className="text-amber-400"> the gods descend to listen.</span>
             </blockquote>
-            <div className="text-8xl text-amber-500/20 font-serif absolute -bottom-16 right-0">"</div>
+            <div className="text-8xl text-amber-500/20 font-serif absolute -bottom-16 right-0">&quot;</div>
           </div>
           <p className="mt-12 text-white/40 uppercase tracking-[0.3em] text-sm">
             — Ancient Odia Proverb

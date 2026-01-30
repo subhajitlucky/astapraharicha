@@ -5,7 +5,8 @@ import { MapPin, Calendar, Users } from 'lucide-react';
 import { usePrahariStore } from '@/store/prahariStore';
 
 export default function VillageDedication() {
-  const { currentPrahari } = usePrahariStore();
+  // Store hook reserved for future dynamic theming based on current prahari
+  usePrahariStore();
 
   return (
     <motion.div

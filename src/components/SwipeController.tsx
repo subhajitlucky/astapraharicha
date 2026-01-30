@@ -1,14 +1,31 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { usePrahariStore } from "@/store/prahariStore";
 
 export default function SwipeController() {
   const { currentPrahari, setPrahari, isTransitioning, setTransitioning, totalRotation, setTotalRotation } = usePrahariStore();
   const touchStart = useRef<number | null>(null);
   const touchEnd = useRef<number | null>(null);
+  const totalRotationRef = useRef(totalRotation);
 
   const minSwipeDistance = 50;
+
+  // Sync ref with store value in effect to avoid React 19 ref mutation error
+  useEffect(() => {
+    totalRotationRef.current = totalRotation;
+  }, [totalRotation]);
+
+  const changePrahari = useCallback((id: number, direction: number) => {
+    if (isTransitioning) return;
+    setTransitioning(true);
+    
+    const newRotation = totalRotationRef.current + (direction * 45);
+    setTotalRotation(newRotation);
+    
+    setPrahari(id);
+    setTimeout(() => setTransitioning(false), 1200);
+  }, [isTransitioning, setPrahari, setTotalRotation, setTransitioning]);
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
@@ -37,17 +54,6 @@ export default function SwipeController() {
       touchEnd.current = null;
     };
 
-    const changePrahari = (id: number, direction: number) => {
-      if (isTransitioning) return;
-      setTransitioning(true);
-      
-      const newRotation = totalRotation + (direction * 45);
-      setTotalRotation(newRotation);
-      
-      setPrahari(id);
-      setTimeout(() => setTransitioning(false), 1200);
-    };
-
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('touchend', handleTouchEnd);
@@ -57,7 +63,7 @@ export default function SwipeController() {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentPrahari.id, isTransitioning, setPrahari, setTransitioning]);
+  }, [currentPrahari.id, changePrahari]);
 
   return null; // Invisible component
 }

@@ -15,10 +15,10 @@ export default function EventCountdown() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isVisible, setIsVisible] = useState(true);
 
-  // Event date: January 31, 2026
-  const eventDate = new Date("2026-01-31T00:00:00");
-
   useEffect(() => {
+    // Event date: January 31, 2026
+    const eventDate = new Date("2026-01-31T00:00:00");
+    
     const calculateTimeLeft = () => {
       const now = new Date();
       const difference = eventDate.getTime() - now.getTime();

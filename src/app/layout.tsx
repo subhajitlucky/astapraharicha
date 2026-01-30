@@ -5,14 +5,16 @@ import "./globals.css";
 const spaceGrotesk = Space_Grotesk({ 
   subsets: ["latin"],
   variable: "--font-space",
-  display: "swap"
+  display: "swap",
+  preload: true
 });
 
 const notoOriya = Noto_Sans_Oriya({
   subsets: ["latin"],
   variable: "--font-odia",
   weight: ["400", "700"],
-  display: "swap"
+  display: "swap",
+  preload: false
 });
 
 export const metadata: Metadata = {

@@ -2,10 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { photoYears, Photo, getPhotosByYear, getPhotosByPrahari } from "@/data/photoGallery";
-import { usePrahariStore } from "@/store/prahariStore";
+import { photoYears, Photo, getPhotosByYear } from "@/data/photoGallery";
 import { X, ChevronLeft, ChevronRight, Calendar, Clock, Tag, Camera } from "lucide-react";
-import Image from "next/image";
 
 interface PhotoGalleryProps {
   isOpen: boolean;
@@ -13,12 +11,10 @@ interface PhotoGalleryProps {
 }
 
 export default function PhotoGallery({ isOpen, onClose }: PhotoGalleryProps) {
-  const { currentPrahari } = usePrahariStore();
   const [selectedYear, setSelectedYear] = useState<number | "all">("all");
   const [selectedPrahari, setSelectedPrahari] = useState<number | "all">("all");
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<"grid" | "timeline">("grid");
 
   const years = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
   const prahariNames = [
