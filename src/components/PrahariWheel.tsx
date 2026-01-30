@@ -3,22 +3,29 @@
 import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { usePrahariStore, praharis } from "@/store/prahariStore";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import gsap from "gsap";
 
 export default function PrahariWheel() {
   const wheelRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
   const { currentPrahari, setPrahari, isTransitioning, setTransitioning, totalRotation, setTotalRotation } = usePrahariStore();
 
   // Sync GSAP rotation with totalRotation from store
   useEffect(() => {
     if (wheelRef.current) {
-      gsap.to(wheelRef.current, {
-        rotation: -totalRotation,
-        duration: 1.2,
-        ease: "power3.inOut"
-      });
+      if (reducedMotion) {
+        // Instant rotation for reduced motion
+        gsap.set(wheelRef.current, { rotation: -totalRotation });
+      } else {
+        gsap.to(wheelRef.current, {
+          rotation: -totalRotation,
+          duration: 1.2,
+          ease: "power3.inOut"
+        });
+      }
     }
-  }, [totalRotation]);
+  }, [totalRotation, reducedMotion]);
 
   const handlePrahariClick = (id: number) => {
     if (isTransitioning || id === currentPrahari.id) return;
@@ -47,20 +54,24 @@ export default function PrahariWheel() {
   return (
     <div className={`fixed right-8 top-1/2 -translate-y-1/2 z-50 transition-colors duration-1000 ${currentPrahari.theme === 'light' ? 'text-black' : 'text-white'}`}>
       {/* Outer decorative ring with accent color */}
-      <motion.div 
-        className="absolute inset-0 border-2 rounded-full"
-        style={{ borderColor: `${accentColor}30` }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-      />
+      {!reducedMotion && (
+        <motion.div 
+          className="absolute inset-0 border-2 rounded-full"
+          style={{ borderColor: `${accentColor}30` }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+        />
+      )}
       
       {/* Secondary ring */}
-      <motion.div 
-        className="absolute inset-2 border rounded-full"
-        style={{ borderColor: `${secondaryColor}20` }}
-        animate={{ rotate: -360 }}
-        transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-      />
+      {!reducedMotion && (
+        <motion.div 
+          className="absolute inset-2 border rounded-full"
+          style={{ borderColor: `${secondaryColor}20` }}
+          animate={{ rotate: -360 }}
+          transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
+        />
+      )}
       
       {/* The Wheel */}
       <div 
@@ -124,15 +135,25 @@ export default function PrahariWheel() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border-2 rounded-full flex items-center justify-center bg-black/20"
           style={{ borderColor: `${accentColor}60` }}
         >
-          <motion.div 
-            className="w-3 h-3 rounded-full"
-            style={{ 
-              backgroundColor: accentColor,
-              boxShadow: `0 0 15px ${accentColor}, 0 0 30px ${accentColor}60`
-            }}
-            animate={{ scale: [1, 1.3, 1], opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
+          {reducedMotion ? (
+            <div 
+              className="w-3 h-3 rounded-full"
+              style={{ 
+                backgroundColor: accentColor,
+                boxShadow: `0 0 15px ${accentColor}, 0 0 30px ${accentColor}60`
+              }}
+            />
+          ) : (
+            <motion.div 
+              className="w-3 h-3 rounded-full"
+              style={{ 
+                backgroundColor: accentColor,
+                boxShadow: `0 0 15px ${accentColor}, 0 0 30px ${accentColor}60`
+              }}
+              animate={{ scale: [1, 1.3, 1], opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          )}
         </div>
       </div>
 

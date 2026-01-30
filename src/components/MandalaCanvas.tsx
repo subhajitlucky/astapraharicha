@@ -6,14 +6,16 @@ import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { usePrahariStore } from "@/store/prahariStore";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface ShaderPlaneProps {
   primaryColor: string;
   secondaryColor: string;
   intensity: number;
+  reducedMotion: boolean;
 }
 
-function ShaderPlane({ primaryColor, secondaryColor, intensity }: ShaderPlaneProps) {
+function ShaderPlane({ primaryColor, secondaryColor, intensity, reducedMotion }: ShaderPlaneProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
   
@@ -111,7 +113,8 @@ function ShaderPlane({ primaryColor, secondaryColor, intensity }: ShaderPlanePro
   useFrame((state) => {
     if (meshRef.current) {
       const material = meshRef.current.material as THREE.ShaderMaterial;
-      material.uniforms.uTime.value = state.clock.elapsedTime;
+      // When reduced motion is enabled, freeze the animation at time 0
+      material.uniforms.uTime.value = reducedMotion ? 0 : state.clock.elapsedTime;
     }
   });
 
@@ -131,6 +134,7 @@ function ShaderPlane({ primaryColor, secondaryColor, intensity }: ShaderPlanePro
 
 export default function MandalaCanvas() {
   const { currentPrahari } = usePrahariStore();
+  const reducedMotion = useReducedMotion();
   
   return (
     <div className="fixed inset-0 -z-10 bg-black">
@@ -146,6 +150,7 @@ export default function MandalaCanvas() {
           primaryColor={currentPrahari.colors.primary}
           secondaryColor={currentPrahari.colors.secondary}
           intensity={currentPrahari.intensity}
+          reducedMotion={reducedMotion}
         />
       </Canvas>
     </div>

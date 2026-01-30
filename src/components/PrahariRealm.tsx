@@ -2,11 +2,13 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrahariStore } from "@/store/prahariStore";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useEffect, useState } from "react";
 import gsap from "gsap";
 
 export default function PrahariRealm() {
   const { currentPrahari } = usePrahariStore();
+  const reducedMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
   const [soulCount, setSoulCount] = useState(0);
 
@@ -26,15 +28,19 @@ export default function PrahariRealm() {
     
     // Animate body background color
     if (typeof window !== 'undefined') {
-      gsap.to("body", {
-        backgroundColor: currentPrahari.colors.primary,
-        duration: 1.5,
-        ease: "power2.inOut"
-      });
+      if (reducedMotion) {
+        gsap.set("body", { backgroundColor: currentPrahari.colors.primary });
+      } else {
+        gsap.to("body", {
+          backgroundColor: currentPrahari.colors.primary,
+          duration: 1.5,
+          ease: "power2.inOut"
+        });
+      }
     }
 
     return () => cancelAnimationFrame(frame);
-  }, [currentPrahari]);
+  }, [currentPrahari, reducedMotion]);
 
   if (!mounted) return null;
 
@@ -75,14 +81,21 @@ export default function PrahariRealm() {
               className="flex items-center gap-2 mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: reducedMotion ? 0 : 0.8 }}
             >
-              <motion.div
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: accentColor }}
-                animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
+              {reducedMotion ? (
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: accentColor }}
+                />
+              ) : (
+                <motion.div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: accentColor }}
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              )}
               <span className="text-xs uppercase tracking-[0.2em] font-light opacity-70">
                 {soulCount} Souls Present in this Realm
               </span>
@@ -150,86 +163,118 @@ export default function PrahariRealm() {
           {/* Right: Visual Representation */}
           <div className="relative aspect-square z-20">
             {/* Multi-layered gradient background */}
-            <motion.div 
-              className="absolute inset-0 rounded-full blur-3xl"
-              style={{ 
-                background: `radial-gradient(circle at 30% 30%, ${accentColor}40 0%, ${secondaryColor}20 40%, transparent 70%)` 
-              }}
-              animate={{ 
-                scale: [1, 1.05, 1],
-                rotate: [0, 5, 0]
-              }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            />
+            {reducedMotion ? (
+              <div 
+                className="absolute inset-0 rounded-full blur-3xl"
+                style={{ 
+                  background: `radial-gradient(circle at 30% 30%, ${accentColor}40 0%, ${secondaryColor}20 40%, transparent 70%)` 
+                }}
+              />
+            ) : (
+              <motion.div 
+                className="absolute inset-0 rounded-full blur-3xl"
+                style={{ 
+                  background: `radial-gradient(circle at 30% 30%, ${accentColor}40 0%, ${secondaryColor}20 40%, transparent 70%)` 
+                }}
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 5, 0]
+                }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
             
             {/* Outer glow ring */}
-            <motion.div
-              className="absolute inset-4 rounded-full border-2"
-              style={{ borderColor: `${secondaryColor}40` }}
-              animate={{ 
-                scale: [1, 1.02, 1],
-                opacity: [0.3, 0.5, 0.3]
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
+            {reducedMotion ? (
+              <div
+                className="absolute inset-4 rounded-full border-2"
+                style={{ borderColor: `${secondaryColor}40` }}
+              />
+            ) : (
+              <motion.div
+                className="absolute inset-4 rounded-full border-2"
+                style={{ borderColor: `${secondaryColor}40` }}
+                animate={{ 
+                  scale: [1, 1.02, 1],
+                  opacity: [0.3, 0.5, 0.3]
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
             
             {/* Main circle with ID - enhanced visibility */}
             <motion.div 
               className="absolute inset-8 border-2 rounded-full flex items-center justify-center"
               style={{ borderColor: `${accentColor}60` }}
-              initial={{ rotate: -90, opacity: 0 }}
+              initial={{ rotate: reducedMotion ? 0 : -90, opacity: 0 }}
               animate={{ rotate: 0, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
+              transition={{ delay: reducedMotion ? 0 : 0.4, duration: reducedMotion ? 0.1 : 0.8 }}
             >
-              <motion.div 
-                className="text-6xl md:text-8xl font-bold"
-                style={{ 
-                  color: accentColor,
-                  textShadow: `0 0 30px ${accentColor}60, 0 0 60px ${accentColor}30`
-                }}
-                animate={{ 
-                  textShadow: [
-                    `0 0 20px ${accentColor}40`,
-                    `0 0 40px ${accentColor}80`,
-                    `0 0 60px ${accentColor}40`,
-                    `0 0 20px ${accentColor}40`
-                  ],
-                  opacity: [0.8, 1, 0.9, 0.8]
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                {String(currentPrahari.id).padStart(2, '0')}
-              </motion.div>
+              {reducedMotion ? (
+                <div 
+                  className="text-6xl md:text-8xl font-bold"
+                  style={{ 
+                    color: accentColor,
+                    textShadow: `0 0 30px ${accentColor}60, 0 0 60px ${accentColor}30`
+                  }}
+                >
+                  {String(currentPrahari.id).padStart(2, '0')}
+                </div>
+              ) : (
+                <motion.div 
+                  className="text-6xl md:text-8xl font-bold"
+                  style={{ 
+                    color: accentColor,
+                    textShadow: `0 0 30px ${accentColor}60, 0 0 60px ${accentColor}30`
+                  }}
+                  animate={{ 
+                    textShadow: [
+                      `0 0 20px ${accentColor}40`,
+                      `0 0 40px ${accentColor}80`,
+                      `0 0 60px ${accentColor}40`,
+                      `0 0 20px ${accentColor}40`
+                    ],
+                    opacity: [0.8, 1, 0.9, 0.8]
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  {String(currentPrahari.id).padStart(2, '0')}
+                </motion.div>
+              )}
             </motion.div>
 
             {/* Animated orbital rings */}
-            <motion.div
-              className="absolute inset-0 rounded-full border"
-              style={{ borderColor: `${secondaryColor}30` }}
-              animate={{ 
-                scale: [1, 1.1, 1],
-                rotate: [0, 180, 360]
-              }}
-              transition={{ 
-                duration: 20,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            />
-            
-            <motion.div
-              className="absolute inset-2 rounded-full border"
-              style={{ borderColor: `${accentColor}20` }}
-              animate={{ 
-                scale: [1.1, 1, 1.1],
-                rotate: [360, 180, 0]
-              }}
-              transition={{ 
-                duration: 15,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            />
+            {!reducedMotion && (
+              <>
+                <motion.div
+                  className="absolute inset-0 rounded-full border"
+                  style={{ borderColor: `${secondaryColor}30` }}
+                  animate={{ 
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 180, 360]
+                  }}
+                  transition={{ 
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                />
+                
+                <motion.div
+                  className="absolute inset-2 rounded-full border"
+                  style={{ borderColor: `${accentColor}20` }}
+                  animate={{ 
+                    scale: [1.1, 1, 1.1],
+                    rotate: [360, 180, 0]
+                  }}
+                  transition={{ 
+                    duration: 15,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                />
+              </>
+            )}
           </div>
         </motion.div>
       </AnimatePresence>
