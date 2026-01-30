@@ -22,6 +22,7 @@ export default function PrahariRealm() {
     root.style.setProperty("--current-primary", currentPrahari.colors.primary);
     root.style.setProperty("--current-secondary", currentPrahari.colors.secondary);
     root.style.setProperty("--current-accent", currentPrahari.colors.accent);
+    root.style.setProperty("--current-mist", currentPrahari.colors.mist);
     
     // Animate body background color
     if (typeof window !== 'undefined') {
@@ -37,8 +38,13 @@ export default function PrahariRealm() {
 
   if (!mounted) return null;
 
+  // Dynamic text color based on prahari's secondary color
+  const textColor = currentPrahari.theme === 'light' ? 'text-black' : 'text-white';
+  const accentColor = currentPrahari.colors.accent;
+  const secondaryColor = currentPrahari.colors.secondary;
+
   return (
-    <div className={`relative min-h-screen w-full flex items-center justify-center px-4 md:px-20 z-20 ${currentPrahari.theme === 'light' ? 'text-black' : 'text-white'}`}>
+    <div className={`relative min-h-screen w-full flex items-center justify-center px-4 md:px-20 z-20 ${textColor}`}>
       <AnimatePresence mode="wait">
         <motion.div
           key={currentPrahari.id}
@@ -51,13 +57,18 @@ export default function PrahariRealm() {
           {/* Left: Typography & Info */}
           <div className="space-y-6 text-left relative z-30">
             <motion.div
-              className="flex items-center gap-2 mb-4 opacity-50"
+              className="flex items-center gap-2 mb-4"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-light">
+              <motion.div 
+                className="w-2 h-2 rounded-full animate-pulse"
+                style={{ backgroundColor: accentColor }}
+                animate={{ scale: [1, 1.2, 1], opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span className="text-xs uppercase tracking-[0.2em] font-light opacity-70">
                 {soulCount} Souls Present in this Realm
               </span>
             </motion.div>
@@ -67,10 +78,19 @@ export default function PrahariRealm() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <span className="text-xs uppercase tracking-[0.3em] opacity-60 block mb-2">
+              <motion.span 
+                className="text-xs uppercase tracking-[0.3em] block mb-2 font-medium"
+                style={{ color: secondaryColor, opacity: 0.9 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 0.9, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
                 {currentPrahari.phase}
-              </span>
-              <h2 className="text-5xl md:text-7xl font-bold text-spiritual leading-tight">
+              </motion.span>
+              <h2 
+                className="text-5xl md:text-7xl font-bold text-spiritual leading-tight"
+                style={{ color: accentColor }}
+              >
                 {currentPrahari.nameOdia}
               </h2>
               <h3 className="text-2xl md:text-3xl font-light mt-2 opacity-80">
@@ -78,10 +98,17 @@ export default function PrahariRealm() {
               </h3>
             </motion.div>
 
-            <div className="h-px w-24 bg-current opacity-30" />
+            <motion.div 
+              className="h-px w-24"
+              style={{ backgroundColor: secondaryColor, opacity: 0.5 }}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+            />
 
             <motion.p 
-              className="text-lg md:text-xl leading-relaxed opacity-80 max-w-md"
+              className="text-lg md:text-xl leading-relaxed max-w-md"
+              style={{ color: currentPrahari.theme === 'light' ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -90,10 +117,16 @@ export default function PrahariRealm() {
             </motion.p>
 
             <motion.div
-              className="inline-block px-6 py-3 border border-current rounded-full text-sm tracking-widest uppercase"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              className="inline-block px-6 py-3 rounded-full text-sm tracking-widest uppercase border-2"
+              style={{ 
+                borderColor: accentColor,
+                color: accentColor,
+                backgroundColor: `${accentColor}15`
+              }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
+              whileHover={{ scale: 1.05, backgroundColor: `${accentColor}25` }}
             >
               {currentPrahari.mantra}
             </motion.div>
@@ -101,40 +134,101 @@ export default function PrahariRealm() {
 
           {/* Right: Visual Representation */}
           <div className="relative aspect-square z-20">
-            <div 
-              className="absolute inset-0 rounded-full opacity-20 blur-3xl"
+            {/* Multi-layered gradient background */}
+            <motion.div 
+              className="absolute inset-0 rounded-full blur-3xl"
               style={{ 
-                background: `radial-gradient(circle, ${currentPrahari.colors.accent} 0%, transparent 70%)` 
+                background: `radial-gradient(circle at 30% 30%, ${accentColor}40 0%, ${secondaryColor}20 40%, transparent 70%)` 
+              }}
+              animate={{ 
+                scale: [1, 1.05, 1],
+                rotate: [0, 5, 0]
+              }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            />
+            
+            {/* Outer glow ring */}
+            <motion.div
+              className="absolute inset-4 rounded-full border-2"
+              style={{ borderColor: `${secondaryColor}40` }}
+              animate={{ 
+                scale: [1, 1.02, 1],
+                opacity: [0.3, 0.5, 0.3]
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+            
+            {/* Main circle with ID - enhanced visibility */}
+            <motion.div 
+              className="absolute inset-8 border-2 rounded-full flex items-center justify-center"
+              style={{ borderColor: `${accentColor}60` }}
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            >
+              <motion.div 
+                className="text-6xl md:text-8xl font-bold"
+                style={{ 
+                  color: accentColor,
+                  textShadow: `0 0 30px ${accentColor}60, 0 0 60px ${accentColor}30`
+                }}
+                animate={{ 
+                  textShadow: [
+                    `0 0 20px ${accentColor}40`,
+                    `0 0 40px ${accentColor}80`,
+                    `0 0 60px ${accentColor}40`,
+                    `0 0 20px ${accentColor}40`
+                  ],
+                  opacity: [0.8, 1, 0.9, 0.8]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                {String(currentPrahari.id).padStart(2, '0')}
+              </motion.div>
+            </motion.div>
+
+            {/* Animated orbital rings */}
+            <motion.div
+              className="absolute inset-0 rounded-full border"
+              style={{ borderColor: `${secondaryColor}30` }}
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 180, 360]
+              }}
+              transition={{ 
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear"
               }}
             />
             
-            <div className="absolute inset-8 border-2 border-current opacity-30 rounded-full flex items-center justify-center">
-              <div className="text-6xl md:text-8xl font-bold opacity-20">
-                {String(currentPrahari.id).padStart(2, '0')}
-              </div>
-            </div>
-
             <motion.div
-              className="absolute inset-0 rounded-full border border-current opacity-40"
+              className="absolute inset-2 rounded-full border"
+              style={{ borderColor: `${accentColor}20` }}
               animate={{ 
-                scale: [1, 1.1, 1],
-                opacity: [0.3, 0.1, 0.3]
+                scale: [1.1, 1, 1.1],
+                rotate: [360, 180, 0]
               }}
               transition={{ 
-                duration: 4,
+                duration: 15,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "linear"
               }}
             />
           </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Progress Bar */}
-      <div className="fixed bottom-8 left-8 right-8 md:left-20 md:right-20 h-px bg-current opacity-10">
-        <div 
-          className="h-full bg-current transition-all duration-1000"
-          style={{ width: `${(currentPrahari.id / 8) * 100}%` }}
+      {/* Progress Bar with prahari accent color */}
+      <div className="fixed bottom-8 left-8 right-8 md:left-20 md:right-20 h-1 rounded-full overflow-hidden bg-white/10">
+        <motion.div 
+          className="h-full transition-all duration-1000 rounded-full"
+          style={{ 
+            width: `${(currentPrahari.id / 8) * 100}%`,
+            backgroundColor: accentColor,
+            boxShadow: `0 0 10px ${accentColor}50`
+          }}
+          layoutId="progressBar"
         />
       </div>
     </div>

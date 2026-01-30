@@ -39,11 +39,21 @@ export default function Home() {
 
         {/* Dimmer over the canvas so the UI stays readable - Dynamic Opacity */}
         <motion.div 
-          className="fixed inset-0 -z-40 bg-black backdrop-blur-sm"
+          className="fixed inset-0 -z-40 backdrop-blur-sm"
           animate={{ 
-            opacity: currentPrahari.theme === 'light' ? 0.15 : 0.45 
+            opacity: currentPrahari.theme === 'light' ? 0.15 : 0.45,
+            backgroundColor: currentPrahari.colors.primary
           }}
           transition={{ duration: 1.5 }}
+        />
+        
+        {/* Prahari Theme Color Overlay - adds colored tint */}
+        <motion.div 
+          className="fixed inset-0 -z-35 pointer-events-none"
+          animate={{ 
+            background: `radial-gradient(ellipse at 50% 50%, ${currentPrahari.colors.mist} 0%, transparent 60%)`
+          }}
+          transition={{ duration: 2 }}
         />
         
         {/* Grain Overlay */}

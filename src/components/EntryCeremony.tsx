@@ -17,17 +17,18 @@ export default function EntryCeremony() {
     });
     
     // Auto-detect current real-time prahari on entry
+    // Prahari 1 starts at 6:00 AM
     const hour = new Date().getHours();
     let prahariId = 1;
     
-    if (hour >= 18 && hour < 21) prahariId = 1;
-    else if (hour >= 21 || hour < 0) prahariId = 2;
-    else if (hour >= 0 && hour < 3) prahariId = 3;
-    else if (hour >= 3 && hour < 6) prahariId = 4;
-    else if (hour >= 6 && hour < 9) prahariId = 5;
-    else if (hour >= 9 && hour < 12) prahariId = 6;
-    else if (hour >= 12 && hour < 15) prahariId = 7;
-    else if (hour >= 15 && hour < 18) prahariId = 8;
+    if (hour >= 6 && hour < 9) prahariId = 1;      // 6 AM - 9 AM
+    else if (hour >= 9 && hour < 12) prahariId = 2; // 9 AM - 12 PM
+    else if (hour >= 12 && hour < 15) prahariId = 3; // 12 PM - 3 PM
+    else if (hour >= 15 && hour < 18) prahariId = 4; // 3 PM - 6 PM
+    else if (hour >= 18 && hour < 21) prahariId = 5; // 6 PM - 9 PM
+    else if (hour >= 21 || hour < 0) prahariId = 6; // 9 PM - 12 AM
+    else if (hour >= 0 && hour < 3) prahariId = 7;  // 12 AM - 3 AM
+    else if (hour >= 3 && hour < 6) prahariId = 8;  // 3 AM - 6 AM
     
     setPrahari(prahariId);
 
@@ -59,7 +60,7 @@ export default function EntryCeremony() {
       {showCeremony && (
         <motion.div
           key="entry-ceremony"
-          className="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center overflow-hidden"
           initial={{ opacity: 1 }}
           exit={{ 
             opacity: 0,
@@ -183,7 +184,7 @@ export default function EntryCeremony() {
 
           <button 
             onClick={() => setShowCeremony(false)}
-            className="absolute bottom-12 text-[10px] text-white/20 uppercase tracking-[0.5em] hover:text-white/60 transition-colors"
+            className="absolute bottom-12 text-xs text-white/20 uppercase tracking-[0.5em] hover:text-white/60 transition-colors"
           >
             Enter Sanctuary
           </button>

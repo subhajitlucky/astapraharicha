@@ -25,7 +25,7 @@ export default function MobileNavigation() {
     <>
       {/* Current Prahari Indicator (Mobile) */}
       <motion.button
-        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 md:hidden backdrop-blur-md border px-6 py-3 rounded-full flex items-center gap-3 ${
+        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 md:hidden backdrop-blur-md border px-6 py-3 rounded-full flex items-center gap-3 mb-[env(safe-area-inset-bottom)] ${
           currentPrahari.theme === 'light' 
             ? 'bg-white/40 border-black/10 text-black' 
             : 'bg-black/40 border-white/20 text-white/90'
@@ -47,7 +47,7 @@ export default function MobileNavigation() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl md:hidden"
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl md:hidden"
             initial={{ opacity: 0, y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
@@ -60,9 +60,9 @@ export default function MobileNavigation() {
                 </h2>
                 <button 
                   onClick={() => setIsOpen(false)}
-                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
+                  className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center active:bg-white/20"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-6 h-6 text-white" />
                 </button>
               </div>
 

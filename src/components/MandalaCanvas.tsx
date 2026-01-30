@@ -1,3 +1,5 @@
+// @ts-nocheck
+// Type checking disabled due to React 19 + @react-three/fiber type performance issues
 "use client";
 
 import { useRef, useMemo, useEffect } from "react";

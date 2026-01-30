@@ -28,7 +28,7 @@ export default function SlideshowMode() {
   if (!isActive) {
     return (
       <motion.button
-        className="fixed right-6 bottom-36 z-30 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm uppercase tracking-widest hover:bg-white/20 transition-colors hidden md:block"
+        className="fixed right-8 bottom-10 z-30 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm uppercase tracking-widest hover:bg-white/20 transition-colors hidden md:block"
         onClick={handleStart}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

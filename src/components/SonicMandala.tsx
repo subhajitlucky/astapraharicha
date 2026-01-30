@@ -134,10 +134,10 @@ export default function SonicMandala() {
       </div>
 
       <div className="flex flex-col items-start">
-        <span className="text-[10px] uppercase tracking-[0.3em] font-medium">
+        <span className="text-xs md:text-sm uppercase tracking-[0.3em] font-medium">
           {isPlaying ? 'Sonic Mandala Active' : 'Awaken the Sound'}
         </span>
-        <span className={`text-[8px] uppercase tracking-[0.2em] ${currentPrahari.theme === 'light' ? 'text-black/40' : 'text-white/40'}`}>
+        <span className={`text-xs md:text-xs uppercase tracking-[0.2em] ${currentPrahari.theme === 'light' ? 'text-black/40' : 'text-white/40'}`}>
           {currentPrahari.mantra} • {currentPrahari.phase}
         </span>
       </div>

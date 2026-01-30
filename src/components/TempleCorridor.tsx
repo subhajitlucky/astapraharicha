@@ -25,7 +25,7 @@ export default function TempleCorridor() {
     <>
       {/* Floating Toggle Button */}
       <motion.button
-        className="fixed left-6 bottom-16 z-40 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/20 px-4 py-3 rounded-full hover:bg-white/10 transition-colors group"
+        className="fixed left-6 bottom-28 md:bottom-28 z-40 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/20 px-4 py-3 rounded-full hover:bg-white/10 transition-colors group"
         onClick={() => setIsOpen(true)}
         initial={{ x: -100 }}
         animate={{ x: 0 }}
@@ -95,13 +95,13 @@ function CorridorGallery({
 
   return (
     <motion.div
-      className="fixed inset-0 z-[180] bg-black"
+      className="fixed inset-0 z-50 bg-black"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-[190] p-6 bg-gradient-to-b from-black via-black/90 to-transparent">
+      <div className="fixed top-0 left-0 right-0 z-[51] p-6 bg-gradient-to-b from-black via-black/90 to-transparent">
         <div className="flex justify-between items-start">
           <div>
             <h2 className="text-3xl font-bold text-spiritual text-white mb-2">
@@ -255,7 +255,7 @@ function MemoryCard({ memory, index, onClick }: {
 function MemoryShrine({ memory, onClose }: { memory: Memory; onClose: () => void }) {
   return (
     <motion.div
-      className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-12"
+      className="fixed inset-0 z-[52] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -333,7 +333,7 @@ function MemoryShrine({ memory, onClose }: { memory: Memory; onClose: () => void
       
       {/* Close button */}
       <button 
-        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-[201]"
+        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-[53]"
         onClick={onClose}
       >
         ✕

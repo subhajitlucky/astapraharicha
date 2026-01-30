@@ -14,6 +14,7 @@ interface Particle {
 export default function EmberCursor() {
   const { currentPrahari } = usePrahariStore();
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const particleId = useRef(0);
   const cursorRef = useRef<HTMLDivElement>(null);
   
@@ -24,7 +25,20 @@ export default function EmberCursor() {
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
 
+  // Detect touch device on mount
   useEffect(() => {
+    const checkTouch = () => {
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+    checkTouch();
+    window.addEventListener('resize', checkTouch);
+    return () => window.removeEventListener('resize', checkTouch);
+  }, []);
+
+  useEffect(() => {
+    // Don't track mouse on touch devices
+    if (isTouchDevice) return;
+    
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -42,10 +56,12 @@ export default function EmberCursor() {
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [cursorX, cursorY]);
+  }, [cursorX, cursorY, isTouchDevice]);
 
-  // Fade out particles
+  // Fade out particles - always run this hook, just don't update if touch device
   useEffect(() => {
+    if (isTouchDevice) return;
+    
     const interval = setInterval(() => {
       setParticles(prev => 
         prev
@@ -55,7 +71,10 @@ export default function EmberCursor() {
     }, 50);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [isTouchDevice]);
+  
+  // Don't render on touch devices
+  if (isTouchDevice) return null;
 
   return (
     <>
@@ -63,7 +82,7 @@ export default function EmberCursor() {
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="fixed pointer-events-none z-[100] rounded-full mix-blend-screen"
+          className="fixed pointer-events-none z-[70] rounded-full mix-blend-screen"
           style={{
             left: particle.x,
             top: particle.y,
@@ -83,7 +102,7 @@ export default function EmberCursor() {
       {/* Main Cursor Glow */}
       <motion.div
         ref={cursorRef}
-        className="fixed pointer-events-none z-[101] w-6 h-6 rounded-full mix-blend-difference"
+        className="fixed pointer-events-none z-[71] w-6 h-6 rounded-full mix-blend-difference"
         style={{
           x: cursorXSpring,
           y: cursorYSpring,
@@ -95,7 +114,7 @@ export default function EmberCursor() {
       
       {/* Outer Ring */}
       <motion.div
-        className="fixed pointer-events-none z-[100] w-12 h-12 rounded-full border border-current opacity-50"
+        className="fixed pointer-events-none z-[70] w-12 h-12 rounded-full border border-current opacity-50"
         style={{
           x: cursorX,
           y: cursorY,
