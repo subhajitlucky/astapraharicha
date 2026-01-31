@@ -1,21 +1,25 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Image as ThreeImage } from "@react-three/drei";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrahariStore } from "@/store/prahariStore";
+import { Camera, Plus, User, Clock } from "lucide-react";
 import NextImage from "next/image";
+import { UserMemory, subscribeToMemories } from "@/lib/memoryService";
+import { useCurrentPrahar } from "@/hooks/useCurrentPrahar";
+import MemoryUploadModal from "./MemoryUploadModal";
 
-// Placeholder images - replace with actual village photos
-const photoData = [
-  { id: 1, prahariId: 1, url: "https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?w=800&q=80", caption: "Evening lamps" },
-  { id: 2, prahariId: 3, url: "https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?w=800&q=80", caption: "Midnight chant" },
-  { id: 3, prahariId: 5, url: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800&q=80", caption: "Morning aarti" },
-  { id: 4, prahariId: 7, url: "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=800&q=80", caption: "Village gathering" },
-  { id: 5, prahariId: 2, url: "https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=800&q=80", caption: "Night vigil" },
-  { id: 6, prahariId: 4, url: "https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=800&q=80", caption: "Brahma Muhurta" },
+// Default placeholder images for when no user uploads exist
+const defaultPhotoData = [
+  { id: 1, prahariId: 1, url: "https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?w=800&q=80", caption: "Evening lamps", uploaderName: "Festival Archive" },
+  { id: 2, prahariId: 3, url: "https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?w=800&q=80", caption: "Midnight chant", uploaderName: "Festival Archive" },
+  { id: 3, prahariId: 5, url: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800&q=80", caption: "Morning aarti", uploaderName: "Festival Archive" },
+  { id: 4, prahariId: 7, url: "https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=800&q=80", caption: "Village gathering", uploaderName: "Festival Archive" },
+  { id: 5, prahariId: 2, url: "https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=800&q=80", caption: "Night vigil", uploaderName: "Festival Archive" },
+  { id: 6, prahariId: 4, url: "https://images.unsplash.com/photo-1567593810070-7a3d471af022?w=800&q=80", caption: "Brahma Muhurta", uploaderName: "Festival Archive" },
 ];
 
 function PhotoSphere({ url, position, onClick, isActive }: { url: string; position: [number, number, number]; onClick: () => void; isActive: boolean }) {
@@ -47,10 +51,37 @@ function PhotoSphere({ url, position, onClick, isActive }: { url: string; positi
 
 export default function PhotoMandala() {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<typeof photoData[0] | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ id: string | number; url: string; caption?: string; uploaderName: string } | null>(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [userMemories, setUserMemories] = useState<UserMemory[]>([]);
   const { currentPrahari } = usePrahariStore();
+  const { currentPrahar } = useCurrentPrahar();
+  
+  const isCurrentPrahar = currentPrahar === currentPrahari.id;
 
-  const currentPhotos = photoData.filter(p => p.prahariId === currentPrahari.id);
+  // Subscribe to user-uploaded memories for current prahar
+  useEffect(() => {
+    const unsubscribe = subscribeToMemories(currentPrahari.id, (memories) => {
+      setUserMemories(memories);
+    });
+    return () => unsubscribe();
+  }, [currentPrahari.id]);
+
+  // Combine user uploads with default photos (user uploads first)
+  const userPhotos = userMemories.map(m => ({
+    id: m.id || m.uploadedAt.toString(),
+    url: m.imageUrl,
+    caption: m.caption,
+    uploaderName: m.uploaderName,
+    isUserUpload: true,
+  }));
+
+  const defaultPhotos = defaultPhotoData
+    .filter(p => p.prahariId === currentPrahari.id)
+    .map(p => ({ ...p, id: String(p.id), isUserUpload: false }));
+
+  // Show user uploads first, then defaults
+  const currentPhotos = userPhotos.length > 0 ? userPhotos : defaultPhotos;
 
   // Expose open function for mobile toolbar
   if (typeof window !== 'undefined') {
@@ -105,17 +136,50 @@ export default function PhotoMandala() {
               <h3 className="text-2xl sm:text-3xl font-bold text-spiritual text-white mb-1 sm:mb-2">
                 {currentPrahari.nameOdia}
               </h3>
-              <p className="text-white/50 mb-6 sm:mb-8 uppercase tracking-widest text-xs sm:text-sm">
+              <p className="text-white/50 mb-4 sm:mb-6 uppercase tracking-widest text-xs sm:text-sm">
                 Memory Gallery
               </p>
 
+              {/* Upload Button */}
+              <motion.button
+                onClick={() => setIsUploadModalOpen(true)}
+                className={`mb-6 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                  isCurrentPrahar
+                    ? 'bg-amber-500 hover:bg-amber-400 text-black'
+                    : 'bg-white/10 text-white/40 cursor-not-allowed'
+                }`}
+                disabled={!isCurrentPrahar}
+                whileHover={isCurrentPrahar ? { scale: 1.05 } : {}}
+                whileTap={isCurrentPrahar ? { scale: 0.95 } : {}}
+              >
+                <Camera className="w-4 h-4" />
+                {isCurrentPrahar ? 'Share Your Memory' : 'Upload During Active Prahar'}
+              </motion.button>
+
+              {/* Memory Count */}
+              {userMemories.length > 0 && (
+                <p className="text-white/40 text-xs mb-4">
+                  {userMemories.length} memories shared by devotees
+                </p>
+              )}
+
               {/* 3D Floating Gallery */}
-              <div className="w-full h-[60vh] relative">
+              <div className="w-full h-[50vh] relative">
                 {currentPhotos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-white/40">
                     <span className="text-6xl mb-4">📷</span>
                     <p className="text-lg">No memories captured yet for this prahar</p>
-                    <p className="text-sm text-white/20 mt-2">Be the first to add a photo</p>
+                    {isCurrentPrahar ? (
+                      <button
+                        onClick={() => setIsUploadModalOpen(true)}
+                        className="mt-4 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Be the first to share!
+                      </button>
+                    ) : (
+                      <p className="text-sm text-white/20 mt-2">Upload opens during active Prahar</p>
+                    )}
                   </div>
                 ) : (
                   <>
@@ -162,12 +226,26 @@ export default function PhotoMandala() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
                   >
-                    <p className="text-white/80 text-lg">{selectedPhoto.caption}</p>
-                    <p className="text-white/40 text-sm mt-2">Asta Prahari {new Date().getFullYear()}</p>
+                    {selectedPhoto.caption && (
+                      <p className="text-white/80 text-lg">{selectedPhoto.caption}</p>
+                    )}
+                    <p className="text-white/40 text-sm mt-2 flex items-center justify-center gap-1">
+                      <User className="w-3 h-3" />
+                      {selectedPhoto.uploaderName}
+                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
+
+            {/* Upload Modal */}
+            <MemoryUploadModal
+              isOpen={isUploadModalOpen}
+              onClose={() => setIsUploadModalOpen(false)}
+              praharNumber={currentPrahari.id}
+              praharName={currentPrahari.nameEn}
+              accentColor={currentPrahari.colors.accent}
+            />
           </motion.div>
         )}
       </AnimatePresence>
