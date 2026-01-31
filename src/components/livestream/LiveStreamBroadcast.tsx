@@ -11,7 +11,7 @@ import {
   RoomAudioRenderer,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { Track } from "livekit-client";
+import { Track, facingModeFromLocalTrack, LocalVideoTrack, createLocalVideoTrack } from "livekit-client";
 import { motion } from "framer-motion";
 import { 
   Video, 
@@ -22,7 +22,8 @@ import {
   Radio, 
   MonitorUp,
   StopCircle,
-  RefreshCw
+  RefreshCw,
+  SwitchCamera
 } from "lucide-react";
 
 interface LiveStreamBroadcastProps {
@@ -42,6 +43,8 @@ function BroadcastStudioInner({ onEnd }: { onEnd?: () => void }) {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isLive, setIsLive] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
 
   const viewerCount = Math.max(0, participants.length - 1);
   
@@ -98,6 +101,38 @@ function BroadcastStudioInner({ onEnd }: { onEnd?: () => void }) {
       }
     }
   }, [localParticipant, isScreenSharing]);
+
+  // Switch between front and rear camera
+  const switchCamera = useCallback(async () => {
+    if (!localParticipant || isSwitchingCamera) return;
+    
+    setIsSwitchingCamera(true);
+    try {
+      const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
+      
+      // Get current camera track
+      const currentTrack = localParticipant.getTrackPublication(Track.Source.Camera);
+      
+      // Create new track with opposite facing mode
+      const newTrack = await createLocalVideoTrack({
+        facingMode: newFacingMode,
+        resolution: { width: 1280, height: 720 },
+      });
+      
+      // Publish the new track (this will replace the old one)
+      if (currentTrack) {
+        await localParticipant.unpublishTrack(currentTrack.track as LocalVideoTrack);
+      }
+      await localParticipant.publishTrack(newTrack);
+      
+      setFacingMode(newFacingMode);
+      console.log('Camera switched to:', newFacingMode);
+    } catch (error) {
+      console.error('Error switching camera:', error);
+    } finally {
+      setIsSwitchingCamera(false);
+    }
+  }, [localParticipant, facingMode, isSwitchingCamera]);
 
   const startBroadcast = useCallback(async () => {
     if (localParticipant) {
@@ -216,6 +251,22 @@ function BroadcastStudioInner({ onEnd }: { onEnd?: () => void }) {
             }`}
           >
             {isVideoEnabled ? <Video className="w-4 h-4 sm:w-5 sm:h-5" /> : <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" />}
+          </motion.button>
+
+          {/* Switch Camera Button - visible on mobile/tablet */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={switchCamera}
+            disabled={isSwitchingCamera || !isVideoEnabled}
+            className={`p-2 sm:p-3 rounded-full transition-colors ${
+              isSwitchingCamera
+                ? "bg-amber-600 text-white animate-pulse"
+                : "bg-white/20 hover:bg-white/30 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            }`}
+            title={facingMode === 'user' ? 'Switch to rear camera' : 'Switch to front camera'}
+          >
+            <SwitchCamera className={`w-4 h-4 sm:w-5 sm:h-5 ${isSwitchingCamera ? 'animate-spin' : ''}`} />
           </motion.button>
 
           <motion.button
@@ -340,7 +391,7 @@ export default function LiveStreamBroadcast({
         token={token}
         serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
         connect={true}
-        video={true}
+        video={{ facingMode: 'environment' }}  
         audio={true}
         data-lk-theme="default"
         style={{ height: '100%', width: '100%' }}
