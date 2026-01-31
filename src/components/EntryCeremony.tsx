@@ -81,29 +81,29 @@ export default function EntryCeremony() {
             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
           />
 
-          {/* Rotating Yantra Lines */}
+          {/* Rotating Yantra Lines - Responsive */}
           <motion.div
-            className="absolute w-96 h-96 border border-white/10 rounded-full"
+            className="absolute w-64 h-64 md:w-96 md:h-96 border border-white/10 rounded-full"
             animate={{ rotate: 360 }}
             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           />
           <motion.div
-            className="absolute w-80 h-80 border border-white/20 rounded-full"
+            className="absolute w-52 h-52 md:w-80 md:h-80 border border-white/20 rounded-full"
             animate={{ rotate: -360 }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
           <motion.div
-            className="absolute w-64 h-64 border border-amber-500/30 rounded-full"
+            className="absolute w-40 h-40 md:w-64 md:h-64 border border-amber-500/30 rounded-full"
             animate={{ rotate: 360 }}
             transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
           />
 
-          {/* Odia Characters */}
+          {/* Odia Characters - Responsive */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             {["ଓଁ", "ଜୟ", "ଜଗନ୍ନାଥ"].map((char, i) => (
               <motion.span
                 key={i}
-                className="absolute text-9xl font-bold text-white/5 text-spiritual"
+                className="absolute text-6xl md:text-9xl font-bold text-white/5 text-spiritual"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ 
                   opacity: [0, 0.15, 0],
@@ -121,7 +121,7 @@ export default function EntryCeremony() {
           </div>
 
           {/* Central Content - Dedication to Chadheigaon */}
-          <div className="relative z-10 text-center space-y-8 px-4 pt-4">
+          <div className="relative z-10 text-center space-y-4 md:space-y-8 px-4 pt-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -139,13 +139,13 @@ export default function EntryCeremony() {
                 </span>
               </motion.div>
 
-              <h1 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-600 text-spiritual mb-2">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-600 text-spiritual mb-1 md:mb-2">
                 ଚଢେଇଗାଁ
               </h1>
-              <p className="text-xl md:text-2xl text-white/60 font-medium tracking-wider mb-1">
+              <p className="text-lg sm:text-xl md:text-2xl text-white/60 font-medium tracking-wider mb-0.5 md:mb-1">
                 Chadheigaon Village
               </p>
-              <p className="text-sm text-white/40 tracking-widest">
+              <p className="text-xs sm:text-sm text-white/40 tracking-widest">
                 Puri District, Odisha
               </p>
             </motion.div>
@@ -164,19 +164,19 @@ export default function EntryCeremony() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.5, delay: 0.6 }}
             >
-              <h2 className="text-4xl md:text-6xl font-bold text-white/90 text-spiritual mb-3">
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white/90 text-spiritual mb-2 md:mb-3">
                 ଆଠ ପ୍ରହରୀ
               </h2>
-              <p className="text-amber-400/80 text-lg md:text-xl tracking-wider font-light">
+              <p className="text-amber-400/80 text-base sm:text-lg md:text-xl tracking-wider font-light">
                 24-Hour Continuous Chanting Festival
               </p>
-              <p className="text-white/30 text-sm mt-2 tracking-[0.2em] uppercase">
+              <p className="text-white/30 text-xs sm:text-sm mt-1 md:mt-2 tracking-[0.15em] md:tracking-[0.2em] uppercase">
                 A Sacred Tradition Since Generations
               </p>
             </motion.div>
 
             {/* Progress Mandala */}
-            <div className="relative w-40 h-40 md:w-48 md:h-48 mx-auto">
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto">
               <div className="absolute inset-0 rounded-full border border-white/10" />
               <motion.div 
                 className="absolute inset-0 rounded-full border-2 border-transparent"
@@ -187,7 +187,7 @@ export default function EntryCeremony() {
               />
               
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-4xl font-light text-amber-500 font-mono">
+                <span className="text-2xl sm:text-3xl md:text-4xl font-light text-amber-500 font-mono">
                   {Math.floor(progress)}%
                 </span>
               </div>
@@ -212,7 +212,7 @@ export default function EntryCeremony() {
 
             {/* Progress Text with Village Context */}
             <motion.p
-              className="text-white/30 text-sm tracking-widest uppercase"
+              className="text-white/30 text-xs sm:text-sm tracking-wider md:tracking-widest uppercase px-2"
               animate={{ opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
@@ -235,9 +235,9 @@ export default function EntryCeremony() {
 
           <button
             onClick={() => setShowCeremony(false)}
-            className="absolute bottom-6 md:bottom-12 text-xs text-amber-400/60 hover:text-amber-400 uppercase tracking-[0.5em] transition-colors px-6 py-3 border border-amber-500/30 rounded-full hover:bg-amber-500/10"
+            className="absolute bottom-4 sm:bottom-6 md:bottom-12 text-[10px] sm:text-xs text-amber-400/60 hover:text-amber-400 uppercase tracking-[0.3em] sm:tracking-[0.5em] transition-colors px-4 sm:px-6 py-2 sm:py-3 border border-amber-500/30 rounded-full hover:bg-amber-500/10"
           >
-            Enter the Sacred Space
+            Enter Sacred Space
           </button>
         </motion.div>
       )}

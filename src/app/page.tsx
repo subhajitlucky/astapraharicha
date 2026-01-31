@@ -7,6 +7,7 @@ import EmberCursor from "@/components/EmberCursor";
 import EntryCeremony from "@/components/EntryCeremony";
 import VillageStories from "@/components/VillageStories";
 import MobileNavigation from "@/components/MobileNavigation";
+import MobileToolbar from "@/components/MobileToolbar";
 import SwipeController from "@/components/SwipeController";
 import PhotoMandala from "@/components/PhotoMandala";
 import TempleCorridor from "@/components/TempleCorridor";
@@ -22,8 +23,43 @@ const MandalaCanvas = dynamic(() => import("@/components/MandalaCanvas"), {
   loading: () => <div className="fixed inset-0 bg-black" />
 });
 
+// Global window interface extension
+declare global {
+  interface Window {
+    openPhotoMandala?: () => void;
+    openTempleCorridor?: () => void;
+    openVillageStories?: () => void;
+    startSlideshow?: () => void;
+  }
+}
+
 export default function Home() {
   const { currentPrahari } = usePrahariStore();
+  
+  // Mobile toolbar action handlers
+  const handleOpenMemories = () => {
+    if (typeof window !== 'undefined' && window.openPhotoMandala) {
+      window.openPhotoMandala();
+    }
+  };
+
+  const handleOpenCorridor = () => {
+    if (typeof window !== 'undefined' && window.openTempleCorridor) {
+      window.openTempleCorridor();
+    }
+  };
+
+  const handleOpenStories = () => {
+    if (typeof window !== 'undefined' && window.openVillageStories) {
+      window.openVillageStories();
+    }
+  };
+
+  const handleStartSlideshow = () => {
+    if (typeof window !== 'undefined' && window.startSlideshow) {
+      window.startSlideshow();
+    }
+  };
   
   return (
     <>
@@ -73,17 +109,27 @@ export default function Home() {
         
          {/* Navigation & Interaction Layer - Highest Z-index */}
          <div className="relative z-50">
-            {/* Desktop-only components */}
+            {/* Desktop-only UI elements */}
             <div className="hidden md:block">
               <PrahariWheel />
-              <TempleCorridor />
-              <VillageStories />
-              <SlideshowMode />
             </div>
+            
+            {/* Available on all screens - modal/panel based */}
+            <TempleCorridor />
+            <VillageStories />
+            <SlideshowMode />
+            <PhotoMandala />
            
-           {/* Mobile & Desktop components */}
+           {/* Mobile & Desktop navigation */}
            <MobileNavigation />
-           <PhotoMandala />
+           
+           {/* Mobile Toolbar - provides access to desktop features */}
+           <MobileToolbar
+             onOpenMemories={handleOpenMemories}
+             onOpenCorridor={handleOpenCorridor}
+             onOpenStories={handleOpenStories}
+             onStartSlideshow={handleStartSlideshow}
+           />
          </div>
         
          {/* Corner Blessing */}

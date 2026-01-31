@@ -23,24 +23,24 @@ export default function MobileNavigation() {
 
   return (
     <>
-      {/* Current Prahari Indicator (Mobile) */}
+      {/* Current Prahari Indicator (Mobile) - Bottom center navigation */}
       <motion.button
-        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-50 md:hidden backdrop-blur-md border px-6 py-3 rounded-full flex items-center gap-3 mb-[env(safe-area-inset-bottom)] ${
+        className={`fixed bottom-3 left-1/2 -translate-x-1/2 z-50 md:hidden backdrop-blur-md border px-4 py-2.5 rounded-full flex items-center gap-2 mb-[env(safe-area-inset-bottom)] ${
           currentPrahari.theme === 'light' 
             ? 'bg-white/40 border-black/10 text-black' 
-            : 'bg-black/40 border-white/20 text-white/90'
+            : 'bg-black/60 border-white/20 text-white/90'
         }`}
         onClick={() => setIsOpen(true)}
         whileTap={{ scale: 0.95 }}
       >
         <span 
-          className="w-3 h-3 rounded-full"
+          className="w-2.5 h-2.5 rounded-full"
           style={{ backgroundColor: currentPrahari.colors.accent }}
         />
-        <span className="text-sm font-medium">
+        <span className="text-xs font-medium">
           {currentPrahari.nameOdia}
         </span>
-        <ChevronUp className={`w-4 h-4 ${currentPrahari.theme === 'light' ? 'text-black/60' : 'text-white/60'}`} />
+        <ChevronUp className={`w-3.5 h-3.5 ${currentPrahari.theme === 'light' ? 'text-black/60' : 'text-white/60'}`} />
       </motion.button>
 
       {/* Full Screen Mobile Menu */}

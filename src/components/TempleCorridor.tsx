@@ -21,6 +21,11 @@ export default function TempleCorridor() {
     });
   }, [currentPrahari.id, filterYear]);
 
+  // Expose open function for mobile toolbar
+  if (typeof window !== 'undefined') {
+    (window as Window & { openTempleCorridor?: () => void }).openTempleCorridor = () => setIsOpen(true);
+  }
+
   return (
     <>
       {/* Floating Toggle Button - Desktop Only */}

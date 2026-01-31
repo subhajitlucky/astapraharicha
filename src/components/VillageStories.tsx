@@ -75,13 +75,20 @@ const dummyStories: Story[] = [
 export default function VillageStories() {
   const { currentPrahari } = usePrahariStore();
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   
   const relevantStories = dummyStories.filter(s => s.prahariId === currentPrahari.id);
+
+  // Expose open function for mobile toolbar
+  if (typeof window !== 'undefined') {
+    (window as Window & { openVillageStories?: () => void }).openVillageStories = () => setIsMobileOpen(true);
+  }
 
   if (relevantStories.length === 0) return null;
 
   return (
     <>
+      {/* Desktop Version */}
       <motion.div
         className="fixed left-8 bottom-48 z-30 max-w-xs hidden md:block"
         initial={{ opacity: 0, x: -50 }}
@@ -107,6 +114,46 @@ export default function VillageStories() {
           ))}
         </div>
       </motion.div>
+
+      {/* Mobile Stories Panel */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl md:hidden"
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+          >
+            <div className="h-full flex flex-col p-4">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-amber-100">Village Lore</h2>
+                <button 
+                  onClick={() => setIsMobileOpen(false)}
+                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto space-y-3">
+                {relevantStories.map((story) => (
+                  <motion.button
+                    key={story.id}
+                    onClick={() => {
+                      setSelectedStory(story);
+                      setIsMobileOpen(false);
+                    }}
+                    className="w-full text-left p-4 bg-white/5 border border-white/10 rounded-xl"
+                  >
+                    <h5 className="text-base font-medium text-white/90">{story.title}</h5>
+                    <p className="text-xs text-white/50 mt-1 line-clamp-2">{story.content}</p>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {selectedStory && (

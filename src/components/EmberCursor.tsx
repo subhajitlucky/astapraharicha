@@ -14,6 +14,7 @@ interface Particle {
 export default function EmberCursor() {
   const { currentPrahari } = usePrahariStore();
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [isDesktop, setIsDesktop] = useState(false);
   const particleId = useRef(0);
   
   const cursorX = useMotionValue(0);
@@ -22,6 +23,16 @@ export default function EmberCursor() {
   const springConfig = { damping: 25, stiffness: 300 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
+
+  // Check if desktop on mount
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   // Mouse/touch move handler
   useEffect(() => {
@@ -79,6 +90,11 @@ export default function EmberCursor() {
     
     return () => clearInterval(interval);
   }, []);
+
+  // Don't render on mobile/tablet
+  if (!isDesktop) {
+    return null;
+  }
 
   return (
     <>

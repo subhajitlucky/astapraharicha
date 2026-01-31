@@ -15,16 +15,36 @@
 @layer base {
   body {
     background-color: var(--current-primary, #050505);
-    /* Only hide cursor on desktop */
-    @apply cursor-default;
+    cursor: auto;
     touch-action: pan-y;
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Hide cursor on desktop only for custom cursor effect */
   @media (min-width: 768px) {
-    body {
-      @apply cursor-none;
+    body:not(.show-cursor) {
+      cursor: none;
     }
+    
+    /* But always show on interactive elements */
+    input, textarea, select, button, a, [role="button"] {
+      cursor: auto !important;
+    }
+  }
+  
+  /* Force cursor visibility on broadcast pages */
+  body.show-cursor,
+  body.show-cursor * {
+    cursor: auto !important;
+  }
+  
+  /* Always ensure visible caret */
+  input, textarea, select {
+    caret-color: #fbbf24 !important; /* amber-400 */
+  }
+  
+  input[type="password"] {
+    caret-color: #fbbf24 !important;
   }
   
   ::selection {

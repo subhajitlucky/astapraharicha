@@ -31,32 +31,32 @@ export default function LivePage() {
 
   if (hasJoined) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-black via-orange-950/20 to-black p-4 md:p-8">
+      <main className="min-h-screen bg-gradient-to-br from-black via-orange-950/20 to-black p-3 sm:p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between mb-6"
+            className="flex items-center justify-between mb-4 sm:mb-6 gap-2"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               {/* Back to Home */}
               <Link href="/">
                 <motion.div
                   whileHover={{ scale: 1.05, x: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-10 h-10 rounded-full bg-white/5 border border-amber-500/20 hover:border-amber-500/40 hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 border border-amber-500/20 hover:border-amber-500/40 hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
                 >
-                  <ArrowLeft className="w-5 h-5 text-amber-400/80" />
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400/80" />
                 </motion.div>
               </Link>
               
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center">
-                <Radio className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0">
+                <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-amber-100">अष्टप्रहरीचा Live</h1>
-                <p className="text-amber-200/60 text-sm">Divine ceremony broadcast</p>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg md:text-xl font-bold text-amber-100 truncate">ଅଷ୍ଟ ପ୍ରହରୀ Live</h1>
+                <p className="text-amber-200/60 text-xs sm:text-sm hidden sm:block">Divine ceremony broadcast</p>
               </div>
             </div>
             
@@ -64,9 +64,9 @@ export default function LivePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleLeave}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-amber-200 text-sm transition-colors"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 rounded-full text-amber-200 text-xs sm:text-sm transition-colors flex-shrink-0"
             >
-              Leave Stream
+              Leave
             </motion.button>
           </motion.div>
 
@@ -75,7 +75,8 @@ export default function LivePage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="aspect-video rounded-2xl overflow-hidden shadow-2xl shadow-orange-500/10"
+            className="w-full rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl shadow-orange-500/10"
+            style={{ aspectRatio: '16/9', minHeight: '250px' }}
           >
             <LiveStreamViewer
               roomName={ROOM_NAME}
@@ -89,12 +90,12 @@ export default function LivePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-6 p-6 bg-white/5 rounded-2xl border border-amber-500/20"
+            className="mt-4 sm:mt-6 p-4 sm:p-6 bg-white/5 rounded-xl sm:rounded-2xl border border-amber-500/20"
           >
-            <h2 className="text-lg font-semibold text-amber-100 mb-2">
-              🪔 अष्टप्रहरीचा महोत्सव - Live Darshan
+            <h2 className="text-base sm:text-lg font-semibold text-amber-100 mb-1.5 sm:mb-2">
+              🪔 ଅଷ୍ଟ ପ୍ରହରୀ ମହୋତ୍ସବ - Live Darshan
             </h2>
-            <p className="text-amber-200/70">
+            <p className="text-amber-200/70 text-sm sm:text-base">
               Experience the divine ceremony from anywhere in the world. 
               Join us for the sacred 48-hour continuous celebration.
             </p>
@@ -150,15 +151,15 @@ export default function LivePage() {
         </div>
 
         {/* Join Form */}
-        <form onSubmit={handleJoin} className="space-y-4">
+        <form onSubmit={handleJoin} className="space-y-3 sm:space-y-4">
           <div className="relative">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500/50" />
+            <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-amber-500/50" />
             <input
               type="text"
               value={viewerName}
               onChange={(e) => setViewerName(e.target.value)}
               placeholder="Enter your name"
-              className="w-full pl-12 pr-4 py-4 bg-white/5 border border-amber-500/30 rounded-xl text-amber-100 placeholder:text-amber-200/40 focus:outline-none focus:border-amber-500/60 focus:bg-white/10 transition-all"
+              className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/5 border border-amber-500/30 rounded-xl text-amber-100 placeholder:text-amber-200/40 focus:outline-none focus:border-amber-500/60 focus:bg-white/10 transition-all text-sm sm:text-base"
               required
             />
           </div>
@@ -168,11 +169,11 @@ export default function LivePage() {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={!viewerName.trim()}
-            className="w-full py-4 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all"
+            className="w-full py-3 sm:py-4 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all text-sm sm:text-base"
           >
-            <Sparkles className="w-5 h-5" />
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             Join Live Stream
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </motion.button>
         </form>
 

@@ -14,6 +14,11 @@ export default function SlideshowMode() {
     setShuffledMemories([...memories].sort(() => Math.random() - 0.5));
     setIsActive(true);
   };
+
+  // Expose start function for mobile toolbar
+  if (typeof window !== 'undefined') {
+    (window as Window & { startSlideshow?: () => void }).startSlideshow = handleStart;
+  }
   
   useEffect(() => {
     if (!isActive || shuffledMemories.length === 0) return;

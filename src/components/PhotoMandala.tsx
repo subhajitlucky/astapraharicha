@@ -52,6 +52,11 @@ export default function PhotoMandala() {
 
   const currentPhotos = photoData.filter(p => p.prahariId === currentPrahari.id);
 
+  // Expose open function for mobile toolbar
+  if (typeof window !== 'undefined') {
+    (window as Window & { openPhotoMandala?: () => void }).openPhotoMandala = () => setIsOpen(true);
+  }
+
   return (
     <>
       {/* Floating Gallery Toggle */}
@@ -70,39 +75,37 @@ export default function PhotoMandala() {
         </span>
       </motion.button>
 
-      {/* Mobile Toggle - Positioned in top-right away from header */}
-      <motion.button
-        className="fixed top-20 right-4 z-50 md:hidden w-10 h-10 rounded-full border border-white/20 bg-black/60 backdrop-blur-md flex items-center justify-center shadow-lg"
-        onClick={() => setIsOpen(true)}
-        whileTap={{ scale: 0.95 }}
-      >
-        <span className="text-lg">📸</span>
-      </motion.button>
-
       {/* Gallery Modal */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl"
+            className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <button 
-              className="absolute top-6 right-6 z-[51] w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            {/* Close Button - Better positioned and styled */}
+            <motion.button 
+              className="absolute top-4 left-4 z-[151] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:bg-white/20 hover:text-white transition-all backdrop-blur-md"
               onClick={() => {
                 setIsOpen(false);
                 setSelectedPhoto(null);
               }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              whileTap={{ scale: 0.9 }}
             >
-              ✕
-            </button>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </motion.button>
 
-            <div className="h-full flex flex-col items-center justify-center p-8">
-              <h3 className="text-3xl font-bold text-spiritual text-white mb-2">
+            <div className="h-full flex flex-col items-center justify-center p-4 sm:p-8 pt-16 sm:pt-8">
+              <h3 className="text-2xl sm:text-3xl font-bold text-spiritual text-white mb-1 sm:mb-2">
                 {currentPrahari.nameOdia}
               </h3>
-              <p className="text-white/50 mb-8 uppercase tracking-widest text-sm">
+              <p className="text-white/50 mb-6 sm:mb-8 uppercase tracking-widest text-xs sm:text-sm">
                 Memory Gallery
               </p>
 
