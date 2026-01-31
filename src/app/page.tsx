@@ -13,6 +13,7 @@ import TempleCorridor from "@/components/TempleCorridor";
 import SlideshowMode from "@/components/SlideshowMode";
 import PushpaVrishti from "@/components/PushpaVrishti";
 import VillageDedication from "@/components/village/VillageDedication";
+import LiveButton from "@/components/livestream/LiveButton";
 import { usePrahariStore } from "@/store/prahariStore";
 import { motion } from "framer-motion";
 
@@ -30,6 +31,7 @@ export default function Home() {
       <EmberCursor />
       <PushpaVrishti />
       <SwipeController />
+      <LiveButton />
       
       <main className={`relative min-h-screen overflow-hidden transition-colors duration-1000 ${currentPrahari.theme === 'light' ? 'text-black' : 'text-white'}`}>
         {/* Background Layer - ensure it is truly behind */}
