@@ -12,23 +12,37 @@ const LiveStreamBroadcast = dynamic(
 );
 
 const ROOM_NAME = "astapraharicha-live";
-// Simple broadcast key - change this to something secure!
-const BROADCAST_KEY = "praharicha2026";
 
 export default function BroadcastPage() {
   const [hostName, setHostName] = useState("");
   const [broadcastKey, setBroadcastKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsVerifying(true);
     
-    if (broadcastKey === BROADCAST_KEY && hostName.trim()) {
-      setIsAuthenticated(true);
-    } else {
-      setError("Invalid broadcast key");
+    try {
+      const response = await fetch("/api/broadcast/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: broadcastKey }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.valid && hostName.trim()) {
+        setIsAuthenticated(true);
+      } else {
+        setError(data.error || "Invalid broadcast key");
+      }
+    } catch {
+      setError("Failed to verify. Please try again.");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -199,12 +213,25 @@ export default function BroadcastPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={!hostName.trim() || !broadcastKey}
+            disabled={!hostName.trim() || !broadcastKey || isVerifying}
             className="w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 transition-all"
           >
-            <Radio className="w-5 h-5" />
-            Enter Broadcast Studio
-            <ArrowRight className="w-5 h-5" />
+            {isVerifying ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                />
+                Verifying...
+              </>
+            ) : (
+              <>
+                <Radio className="w-5 h-5" />
+                Enter Broadcast Studio
+                <ArrowRight className="w-5 h-5" />
+              </>
+            )}
           </motion.button>
         </form>
 
