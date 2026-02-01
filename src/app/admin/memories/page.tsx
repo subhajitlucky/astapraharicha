@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Clock, User, Image as ImageIcon, Lock, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+import { Check, X, Clock, User, Image as ImageIcon, Lock, Eye, EyeOff, ChevronDown, Home } from 'lucide-react';
 import { 
   UserMemory, 
   getPendingMemories, 
@@ -42,6 +43,12 @@ export default function AdminPage() {
     if (savedAuth === 'true') {
       setIsAuthenticated(true);
     }
+    
+    // Show cursor on admin page
+    document.body.classList.add('show-cursor');
+    return () => {
+      document.body.classList.remove('show-cursor');
+    };
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -180,12 +187,21 @@ export default function AdminPage() {
               Festival Year: {FESTIVAL_CONFIG.year}
             </p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors flex items-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm transition-colors"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Prahar Filter */}

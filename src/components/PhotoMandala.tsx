@@ -1,12 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Image as ThreeImage } from "@react-three/drei";
-import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePrahariStore } from "@/store/prahariStore";
-import { Camera, Plus, User, Clock } from "lucide-react";
+import { Camera, Plus, User, Clock, Download, X, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import NextImage from "next/image";
 import { UserMemory, subscribeToMemories } from "@/lib/memoryService";
 import { useCurrentPrahar } from "@/hooks/useCurrentPrahar";
@@ -23,35 +20,32 @@ const defaultPhotoData = [
 ];
 
 function PhotoSphere({ url, position, onClick, isActive }: { url: string; position: [number, number, number]; onClick: () => void; isActive: boolean }) {
-  const ref = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (ref.current) {
-      // Gentle bobbing and subtle rotation
-      ref.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.05;
-      ref.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.1;
-    }
-  });
+  return null; // Removed 3D - using 2D gallery now
+}
 
-  return (
-    <ThreeImage 
-      ref={ref}
-      url={url}
-      position={position}
-      scale={[1.5, 1.5]}
-      onClick={onClick}
-      onPointerOver={() => document.body.style.cursor = 'pointer'}
-      onPointerOut={() => document.body.style.cursor = 'none'}
-      transparent
-      opacity={isActive ? 1 : 0.3}
-      toneMapped={false}
-    />
-  );
+// Download image function
+async function downloadImage(url: string, filename: string) {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename || 'memory.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    // Fallback: open in new tab
+    window.open(url, '_blank');
+  }
 }
 
 export default function PhotoMandala() {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<{ id: string | number; url: string; caption?: string; uploaderName: string } | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ id: string | number; url: string; caption?: string; uploaderName: string; uploadedAt?: number } | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [userMemories, setUserMemories] = useState<UserMemory[]>([]);
   const { currentPrahari } = usePrahariStore();
@@ -73,15 +67,42 @@ export default function PhotoMandala() {
     url: m.imageUrl,
     caption: m.caption,
     uploaderName: m.uploaderName,
+    uploadedAt: m.uploadedAt,
     isUserUpload: true,
   }));
 
   const defaultPhotos = defaultPhotoData
     .filter(p => p.prahariId === currentPrahari.id)
-    .map(p => ({ ...p, id: String(p.id), isUserUpload: false }));
+    .map(p => ({ ...p, id: String(p.id), isUserUpload: false, uploadedAt: undefined }));
 
   // Show user uploads first, then defaults
   const currentPhotos = userPhotos.length > 0 ? userPhotos : defaultPhotos;
+
+  // Navigate photos
+  const goToNext = () => {
+    const newIndex = (selectedIndex + 1) % currentPhotos.length;
+    setSelectedIndex(newIndex);
+    setSelectedPhoto(currentPhotos[newIndex]);
+  };
+
+  const goToPrev = () => {
+    const newIndex = (selectedIndex - 1 + currentPhotos.length) % currentPhotos.length;
+    setSelectedIndex(newIndex);
+    setSelectedPhoto(currentPhotos[newIndex]);
+  };
+
+  // Format date
+  const formatDate = (timestamp?: number) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   // Expose open function for mobile toolbar
   if (typeof window !== 'undefined') {
@@ -110,12 +131,20 @@ export default function PhotoMandala() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-[150] bg-black/95 backdrop-blur-xl"
+            className="fixed inset-0 z-[150] bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-y-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            {/* Close Button - Better positioned and styled */}
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `radial-gradient(circle at 25px 25px, white 2px, transparent 0)`,
+                backgroundSize: '50px 50px'
+              }} />
+            </div>
+
+            {/* Close Button */}
             <motion.button 
               className="absolute top-4 left-4 z-[151] w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:bg-white/20 hover:text-white transition-all backdrop-blur-md"
               onClick={() => {
@@ -127,116 +156,252 @@ export default function PhotoMandala() {
               transition={{ delay: 0.2 }}
               whileTap={{ scale: 0.9 }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </motion.button>
 
-            <div className="h-full flex flex-col items-center justify-center p-4 sm:p-8 pt-16 sm:pt-8">
-              <h3 className="text-2xl sm:text-3xl font-bold text-spiritual text-white mb-1 sm:mb-2">
-                {currentPrahari.nameOdia}
-              </h3>
-              <p className="text-white/50 mb-4 sm:mb-6 uppercase tracking-widest text-xs sm:text-sm">
-                Memory Gallery
-              </p>
+            <div className="relative min-h-full flex flex-col items-center p-4 sm:p-8 pt-20">
+              {/* Header */}
+              <motion.div 
+                className="text-center mb-8"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <h3 className="text-3xl sm:text-4xl font-bold text-white mb-2" style={{ fontFamily: 'serif' }}>
+                  {currentPrahari.nameOdia}
+                </h3>
+                <p className="text-amber-400/80 uppercase tracking-[0.3em] text-xs sm:text-sm">
+                  Memory Gallery
+                </p>
+              </motion.div>
 
               {/* Upload Button */}
               <motion.button
                 onClick={() => setIsUploadModalOpen(true)}
-                className={`mb-6 flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                className={`mb-8 flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all shadow-lg ${
                   isCurrentPrahar
-                    ? 'bg-amber-500 hover:bg-amber-400 text-black'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black'
                     : 'bg-white/10 text-white/40 cursor-not-allowed'
                 }`}
                 disabled={!isCurrentPrahar}
-                whileHover={isCurrentPrahar ? { scale: 1.05 } : {}}
+                whileHover={isCurrentPrahar ? { scale: 1.05, boxShadow: '0 0 30px rgba(245, 158, 11, 0.4)' } : {}}
                 whileTap={isCurrentPrahar ? { scale: 0.95 } : {}}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="w-5 h-5" />
                 {isCurrentPrahar ? 'Share Your Memory' : 'Upload During Active Prahar'}
               </motion.button>
 
               {/* Memory Count */}
               {userMemories.length > 0 && (
-                <p className="text-white/40 text-xs mb-4">
-                  {userMemories.length} memories shared by devotees
-                </p>
+                <motion.p 
+                  className="text-white/50 text-sm mb-8 flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <Heart className="w-4 h-4 text-red-400" />
+                  {userMemories.length} {userMemories.length === 1 ? 'memory' : 'memories'} shared by devotees
+                </motion.p>
               )}
 
-              {/* 3D Floating Gallery */}
-              <div className="w-full h-[50vh] relative">
-                {currentPhotos.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-white/40">
-                    <span className="text-6xl mb-4">📷</span>
-                    <p className="text-lg">No memories captured yet for this prahar</p>
-                    {isCurrentPrahar ? (
-                      <button
-                        onClick={() => setIsUploadModalOpen(true)}
-                        className="mt-4 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Be the first to share!
-                      </button>
-                    ) : (
-                      <p className="text-sm text-white/20 mt-2">Upload opens during active Prahar</p>
-                    )}
+              {/* Photo Album Grid */}
+              {currentPhotos.length === 0 ? (
+                <motion.div 
+                  className="flex flex-col items-center justify-center py-20 text-white/40"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                    <Camera className="w-12 h-12 text-white/20" />
                   </div>
-                ) : (
-                  <>
-                    <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-                      <ambientLight intensity={0.5} />
-                      {currentPhotos.map((photo, i) => {
-                        // Arrange in a gentle arc
-                        const x = (i - (currentPhotos.length - 1) / 2) * 2;
-                        const z = -Math.abs(x) * 0.5;
-                        return (
-                          <PhotoSphere
-                            key={photo.id}
-                            url={photo.url}
-                            position={[x, 0, z]}
-                            isActive={selectedPhoto?.id === photo.id}
-                            onClick={() => setSelectedPhoto(photo)}
-                          />
-                        );
-                      })}
-                    </Canvas>
+                  <p className="text-lg mb-2">No memories captured yet</p>
+                  <p className="text-sm text-white/30">for this prahar</p>
+                  {isCurrentPrahar && (
+                    <button
+                      onClick={() => setIsUploadModalOpen(true)}
+                      className="mt-6 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:from-amber-400 hover:to-orange-400 transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Be the first to share!
+                    </button>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div 
+                  className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {currentPhotos.map((photo, index) => (
+                    <motion.div
+                      key={photo.id}
+                      className="group relative bg-white/5 rounded-2xl overflow-hidden border border-white/10 hover:border-amber-500/30 transition-all cursor-pointer"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + index * 0.05 }}
+                      whileHover={{ y: -5, boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}
+                      onClick={() => {
+                        setSelectedPhoto(photo);
+                        setSelectedIndex(index);
+                      }}
+                    >
+                      {/* Photo */}
+                      <div className="aspect-[4/3] relative overflow-hidden">
+                        <img
+                          src={photo.url}
+                          alt={photo.caption || 'Memory'}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
 
-                    {/* 2D Overlay for mobile/desktop fallback */}
-                    <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-4 p-4 overflow-x-auto md:hidden">
-                      {currentPhotos.map((photo) => (
+                      {/* Photo Info */}
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold">
+                            {photo.uploaderName.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium truncate text-sm">
+                              {photo.uploaderName}
+                            </p>
+                            {photo.uploadedAt && (
+                              <p className="text-white/40 text-xs flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatDate(photo.uploadedAt)}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {photo.caption && (
+                          <p className="text-white/70 text-sm line-clamp-2">
+                            "{photo.caption}"
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Quick Actions on Hover */}
+                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                         <button
-                          key={photo.id}
-                          onClick={() => setSelectedPhoto(photo)}
-                          className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-white/20 focus:border-amber-500 relative"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadImage(photo.url, `astapraharicha-memory-${photo.id}.jpg`);
+                          }}
+                          className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+                          title="Download"
                         >
-                          <NextImage src={photo.url} alt={photo.caption || ''} fill className="object-cover" />
+                          <Download className="w-4 h-4" />
                         </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Selected Photo Detail */}
-              <AnimatePresence>
-                {selectedPhoto && (
-                  <motion.div
-                    className="mt-8 text-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                  >
-                    {selectedPhoto.caption && (
-                      <p className="text-white/80 text-lg">{selectedPhoto.caption}</p>
-                    )}
-                    <p className="text-white/40 text-sm mt-2 flex items-center justify-center gap-1">
-                      <User className="w-3 h-3" />
-                      {selectedPhoto.uploaderName}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
             </div>
+
+            {/* Lightbox for selected photo */}
+            <AnimatePresence>
+              {selectedPhoto && (
+                <motion.div
+                  className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setSelectedPhoto(null)}
+                >
+                  {/* Close button */}
+                  <button
+                    onClick={() => setSelectedPhoto(null)}
+                    className="absolute top-4 right-4 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+
+                  {/* Navigation arrows */}
+                  {currentPhotos.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToPrev();
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                      >
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToNext();
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                      >
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Main content */}
+                  <motion.div
+                    className="max-w-5xl w-full flex flex-col items-center"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Image */}
+                    <div className="relative w-full max-h-[70vh] rounded-xl overflow-hidden shadow-2xl">
+                      <img
+                        src={selectedPhoto.url}
+                        alt={selectedPhoto.caption || 'Memory'}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    {/* Photo details */}
+                    <div className="mt-6 text-center w-full max-w-lg">
+                      <div className="flex items-center justify-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold">
+                          {selectedPhoto.uploaderName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="text-left">
+                          <p className="text-white font-medium">{selectedPhoto.uploaderName}</p>
+                          {selectedPhoto.uploadedAt && (
+                            <p className="text-white/40 text-xs flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {formatDate(selectedPhoto.uploadedAt)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {selectedPhoto.caption && (
+                        <p className="text-white/80 text-lg mb-4 italic">
+                          "{selectedPhoto.caption}"
+                        </p>
+                      )}
+
+                      {/* Download button */}
+                      <button
+                        onClick={() => downloadImage(selectedPhoto.url, `astapraharicha-memory-${selectedPhoto.id}.jpg`)}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black rounded-full font-medium hover:from-amber-400 hover:to-orange-400 transition-all"
+                      >
+                        <Download className="w-5 h-5" />
+                        Download Memory
+                      </button>
+
+                      {/* Photo counter */}
+                      <p className="mt-4 text-white/30 text-sm">
+                        {selectedIndex + 1} of {currentPhotos.length}
+                      </p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Upload Modal */}
             <MemoryUploadModal

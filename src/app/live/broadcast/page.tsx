@@ -2,23 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Radio, Key, ArrowRight, Shield, AlertTriangle, ArrowLeft, Home } from "lucide-react";
+import { Radio, Key, ArrowRight, Shield, AlertTriangle, ArrowLeft, Home, Edit3 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { generateRoomId, registerLiveStream, endLiveStream } from "@/lib/livestreamService";
 
 const LiveStreamBroadcast = dynamic(
   () => import("@/components/livestream/LiveStreamBroadcast"),
   { ssr: false }
 );
 
-const ROOM_NAME = "astapraharicha-live";
-
 export default function BroadcastPage() {
   const [hostName, setHostName] = useState("");
+  const [streamTitle, setStreamTitle] = useState("");
   const [broadcastKey, setBroadcastKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [roomName, setRoomName] = useState("");
 
   // Force cursor visibility on this page
   useEffect(() => {
@@ -28,36 +29,65 @@ export default function BroadcastPage() {
     };
   }, []);
 
+  // Generate room ID on mount
+  useEffect(() => {
+    setRoomName(generateRoomId());
+  }, []);
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsVerifying(true);
+    setError("");
+    
+    if (!broadcastKey.trim()) {
+      setError("Please enter a broadcast key");
+      setIsVerifying(false);
+      return;
+    }
+    
+    if (!hostName.trim()) {
+      setError("Please enter your name");
+      setIsVerifying(false);
+      return;
+    }
     
     try {
+      console.log('Verifying broadcast key...');
       const response = await fetch("/api/broadcast/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: broadcastKey }),
+        body: JSON.stringify({ key: broadcastKey.trim() }),
       });
       
       const data = await response.json();
+      console.log('Verification response:', data);
       
       if (data.valid && hostName.trim()) {
+        // Register the livestream in Firebase
+        const title = streamTitle.trim() || `${hostName}'s Live Darshan`;
+        await registerLiveStream(roomName, hostName.trim(), title);
         setIsAuthenticated(true);
       } else {
-        setError(data.error || "Invalid broadcast key");
+        setError(data.error || "Invalid broadcast key. The key you entered doesn't match.");
       }
-    } catch {
-      setError("Failed to verify. Please try again.");
+    } catch (err) {
+      console.error('Verification error:', err);
+      setError("Connection failed. Please check your internet and try again.");
     } finally {
       setIsVerifying(false);
     }
   };
 
-  const handleEndStream = () => {
+  const handleEndStream = async () => {
+    // Remove stream from Firebase
+    await endLiveStream(roomName);
     setIsAuthenticated(false);
     setHostName("");
     setBroadcastKey("");
+    setStreamTitle("");
+    // Generate new room ID for next stream
+    setRoomName(generateRoomId());
   };
 
   if (isAuthenticated) {
@@ -86,7 +116,9 @@ export default function BroadcastPage() {
                 <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg md:text-xl font-bold text-amber-100 truncate">ଅଷ୍ଟ ପ୍ରହରୀ Broadcast</h1>
+                <h1 className="text-base sm:text-lg md:text-xl font-bold text-amber-100 truncate">
+                  {streamTitle || `${hostName}'s Live Darshan`}
+                </h1>
                 <p className="text-amber-200/60 text-xs sm:text-sm truncate">Host: {hostName}</p>
               </div>
             </div>
@@ -110,7 +142,7 @@ export default function BroadcastPage() {
             style={{ aspectRatio: '16/9', minHeight: '280px' }}
           >
             <LiveStreamBroadcast
-              roomName={ROOM_NAME}
+              roomName={roomName}
               hostName={hostName}
               onEnd={handleEndStream}
             />
@@ -195,12 +227,24 @@ export default function BroadcastPage() {
           </div>
 
           <div className="relative">
+            <Edit3 className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-amber-500/50 pointer-events-none" />
+            <input
+              type="text"
+              value={streamTitle}
+              onChange={(e) => setStreamTitle(e.target.value)}
+              placeholder="Stream title (optional)"
+              className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/5 border border-amber-500/30 rounded-xl text-amber-100 placeholder:text-amber-200/40 focus:outline-none focus:border-amber-500/60 focus:bg-white/10 transition-all text-sm sm:text-base"
+              autoComplete="off"
+            />
+          </div>
+
+          <div className="relative">
             <Key className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-amber-500/50 pointer-events-none" />
             <input
               type="password"
               value={broadcastKey}
               onChange={(e) => setBroadcastKey(e.target.value)}
-              placeholder="Broadcast key"
+              placeholder="Enter broadcast key"
               className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/5 border border-amber-500/30 rounded-xl text-amber-100 placeholder:text-amber-200/40 focus:outline-none focus:border-amber-500/60 focus:bg-white/10 transition-all text-sm sm:text-base"
               required
               autoComplete="new-password"

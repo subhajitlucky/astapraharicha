@@ -1,26 +1,7 @@
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
-  updateDoc,
-  doc,
-  onSnapshot,
-  Timestamp,
-  deleteDoc,
-  DocumentData,
-  QuerySnapshot,
-  QueryDocumentSnapshot
-} from 'firebase/firestore';
-import { 
-  ref, 
-  uploadBytes, 
-  getDownloadURL,
-  deleteObject 
-} from 'firebase/storage';
-import { db, storage } from './firebase';
+import { getDatabase, ref, push, set, get, onValue, off, remove, update } from 'firebase/database';
+import app from './firebase';
+
+const db = getDatabase(app);
 
 // Types
 export interface UserMemory {
@@ -30,7 +11,7 @@ export interface UserMemory {
   praharNumber: number;
   uploaderName: string;
   caption?: string;
-  uploadedAt: Timestamp;
+  uploadedAt: number; // timestamp
   isApproved: boolean;
   festivalYear: number;
 }
@@ -49,7 +30,6 @@ export const FESTIVAL_CONFIG = {
 };
 
 // Get current prahar based on TIME OF DAY (not date)
-// Prahar 1: 6AM-9AM, Prahar 2: 9AM-12PM, etc.
 export function getCurrentPrahar(): number | null {
   const now = new Date();
   
@@ -72,7 +52,7 @@ export function getCurrentPrahar(): number | null {
   const hoursSinceStart = currentHour - startHour;
   const prahar = Math.floor(hoursSinceStart / duration) + 1;
   
-  // After last prahar (after 6 AM next day / prahar 8 ends at 6 AM)
+  // After last prahar
   if (prahar > FESTIVAL_CONFIG.totalPrahars) return null;
   
   return prahar;
@@ -94,15 +74,12 @@ export function getTimeRemainingInPrahar(): { hours: number; minutes: number; se
   const currentMinute = now.getMinutes();
   const currentSecond = now.getSeconds();
   
-  // Calculate when this prahar ends
   const praharEndHour = FESTIVAL_CONFIG.praharStartHour + (currentPrahar * FESTIVAL_CONFIG.praharDurationHours);
   
-  // Time remaining calculation
   let remainingHours = praharEndHour - currentHour - 1;
   let remainingMinutes = 59 - currentMinute;
   let remainingSeconds = 59 - currentSecond;
   
-  // Adjust if seconds/minutes overflow
   if (remainingSeconds < 0) {
     remainingSeconds += 60;
     remainingMinutes--;
@@ -114,14 +91,10 @@ export function getTimeRemainingInPrahar(): { hours: number; minutes: number; se
   
   if (remainingHours < 0) return null;
   
-  return { 
-    hours: remainingHours, 
-    minutes: remainingMinutes, 
-    seconds: remainingSeconds 
-  };
+  return { hours: remainingHours, minutes: remainingMinutes, seconds: remainingSeconds };
 }
 
-// Upload image to Firebase Storage
+// Upload image to Cloudinary and save to Realtime Database
 export async function uploadMemoryImage(
   file: File, 
   praharNumber: number,
@@ -129,7 +102,7 @@ export async function uploadMemoryImage(
   caption?: string
 ): Promise<UserMemory> {
   // Validate file size (10MB limit)
-  const maxSize = 10 * 1024 * 1024; // 10MB
+  const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
     throw new Error('File size exceeds 10MB limit');
   }
@@ -139,104 +112,117 @@ export async function uploadMemoryImage(
     throw new Error('Only image files are allowed');
   }
   
-  // Create unique filename
-  const timestamp = Date.now();
-  const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-  const filename = `${timestamp}_${safeName}`;
-  const storagePath = `memories/${FESTIVAL_CONFIG.year}/prahar-${praharNumber}/${filename}`;
+  console.log('Uploading image via Cloudinary...');
   
-  // Upload to Firebase Storage
-  const storageRef = ref(storage, storagePath);
-  const snapshot = await uploadBytes(storageRef, file);
-  const imageUrl = await getDownloadURL(snapshot.ref);
+  // Upload to Cloudinary via API route
+  let imageUrl: string;
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('praharNumber', String(praharNumber));
+    
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Upload failed');
+    }
+    
+    imageUrl = result.url;
+    console.log('Got URL:', imageUrl);
+  } catch (uploadError: any) {
+    console.error('Cloudinary upload error:', uploadError);
+    throw new Error(`Upload failed: ${uploadError.message || 'Unknown error'}`);
+  }
   
-  // Save metadata to Firestore
-  const memoryData: Omit<UserMemory, 'id'> = {
-    imageUrl,
-    praharNumber,
-    uploaderName: uploaderName.trim(),
-    caption: caption?.trim() || undefined,
-    uploadedAt: Timestamp.now(),
-    isApproved: false, // Requires approval
-    festivalYear: FESTIVAL_CONFIG.year,
-  };
-  
-  const docRef = await addDoc(collection(db, 'userMemories'), memoryData);
-  
-  return {
-    id: docRef.id,
-    ...memoryData,
-  };
+  // Save to Firebase Realtime Database (FREE!)
+  try {
+    const memoryData: Omit<UserMemory, 'id'> = {
+      imageUrl,
+      praharNumber,
+      uploaderName: uploaderName.trim(),
+      uploadedAt: Date.now(),
+      isApproved: false,
+      festivalYear: FESTIVAL_CONFIG.year,
+    };
+    
+    // Only add caption if it exists
+    if (caption && caption.trim()) {
+      memoryData.caption = caption.trim();
+    }
+    
+    console.log('Saving to Realtime Database...');
+    const memoriesRef = ref(db, 'userMemories');
+    const newMemoryRef = push(memoriesRef);
+    await set(newMemoryRef, memoryData);
+    console.log('Saved with ID:', newMemoryRef.key);
+    
+    return {
+      id: newMemoryRef.key || undefined,
+      ...memoryData,
+    };
+  } catch (dbError: any) {
+    console.error('Database save error:', dbError);
+    throw new Error(`Failed to save memory data: ${dbError.message || 'Database error'}`);
+  }
 }
 
-// Fetch memories for a specific prahar (approved only for public)
+// Fetch memories for a specific prahar
 export async function getMemoriesForPrahar(
   praharNumber: number, 
   approvedOnly: boolean = true
 ): Promise<UserMemory[]> {
-  const memoriesRef = collection(db, 'userMemories');
+  const memoriesRef = ref(db, 'userMemories');
+  const snapshot = await get(memoriesRef);
   
-  let q;
-  if (approvedOnly) {
-    q = query(
-      memoriesRef,
-      where('praharNumber', '==', praharNumber),
-      where('festivalYear', '==', FESTIVAL_CONFIG.year),
-      where('isApproved', '==', true),
-      orderBy('uploadedAt', 'desc')
-    );
-  } else {
-    q = query(
-      memoriesRef,
-      where('praharNumber', '==', praharNumber),
-      where('festivalYear', '==', FESTIVAL_CONFIG.year),
-      orderBy('uploadedAt', 'desc')
-    );
-  }
+  if (!snapshot.exists()) return [];
   
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-    id: doc.id,
-    ...doc.data()
-  } as UserMemory));
+  const memories: UserMemory[] = [];
+  snapshot.forEach((child) => {
+    const data = child.val();
+    if (data.praharNumber === praharNumber && 
+        data.festivalYear === FESTIVAL_CONFIG.year &&
+        (!approvedOnly || data.isApproved)) {
+      memories.push({ id: child.key, ...data });
+    }
+  });
+  
+  // Sort by uploadedAt descending
+  return memories.sort((a, b) => b.uploadedAt - a.uploadedAt);
 }
 
 // Fetch all pending memories (for admin)
 export async function getPendingMemories(): Promise<UserMemory[]> {
-  const memoriesRef = collection(db, 'userMemories');
-  const q = query(
-    memoriesRef,
-    where('festivalYear', '==', FESTIVAL_CONFIG.year),
-    where('isApproved', '==', false),
-    orderBy('uploadedAt', 'desc')
-  );
+  const memoriesRef = ref(db, 'userMemories');
+  const snapshot = await get(memoriesRef);
   
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-    id: doc.id,
-    ...doc.data()
-  } as UserMemory));
+  if (!snapshot.exists()) return [];
+  
+  const memories: UserMemory[] = [];
+  snapshot.forEach((child) => {
+    const data = child.val();
+    if (data.festivalYear === FESTIVAL_CONFIG.year && !data.isApproved) {
+      memories.push({ id: child.key, ...data });
+    }
+  });
+  
+  return memories.sort((a, b) => b.uploadedAt - a.uploadedAt);
 }
 
 // Approve a memory
 export async function approveMemory(memoryId: string): Promise<void> {
-  const memoryRef = doc(db, 'userMemories', memoryId);
-  await updateDoc(memoryRef, { isApproved: true });
+  const memoryRef = ref(db, `userMemories/${memoryId}`);
+  await update(memoryRef, { isApproved: true });
 }
 
 // Reject/delete a memory
 export async function rejectMemory(memoryId: string, imageUrl: string): Promise<void> {
-  // Delete from storage
-  try {
-    const storageRef = ref(storage, imageUrl);
-    await deleteObject(storageRef);
-  } catch (error) {
-    console.error('Error deleting from storage:', error);
-  }
-  
-  // Delete from Firestore
-  const memoryRef = doc(db, 'userMemories', memoryId);
-  await deleteDoc(memoryRef);
+  const memoryRef = ref(db, `userMemories/${memoryId}`);
+  await remove(memoryRef);
 }
 
 // Real-time listener for memories
@@ -245,52 +231,54 @@ export function subscribeToMemories(
   callback: (memories: UserMemory[]) => void,
   approvedOnly: boolean = true
 ): () => void {
-  const memoriesRef = collection(db, 'userMemories');
+  const memoriesRef = ref(db, 'userMemories');
   
-  let q;
-  if (approvedOnly) {
-    q = query(
-      memoriesRef,
-      where('praharNumber', '==', praharNumber),
-      where('festivalYear', '==', FESTIVAL_CONFIG.year),
-      where('isApproved', '==', true),
-      orderBy('uploadedAt', 'desc')
-    );
-  } else {
-    q = query(
-      memoriesRef,
-      where('praharNumber', '==', praharNumber),
-      where('festivalYear', '==', FESTIVAL_CONFIG.year),
-      orderBy('uploadedAt', 'desc')
-    );
-  }
+  const handleValue = (snapshot: import('firebase/database').DataSnapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+    
+    const memories: UserMemory[] = [];
+    snapshot.forEach((child) => {
+      const data = child.val();
+      if (data.praharNumber === praharNumber && 
+          data.festivalYear === FESTIVAL_CONFIG.year &&
+          (!approvedOnly || data.isApproved)) {
+        memories.push({ id: child.key, ...data });
+      }
+    });
+    
+    callback(memories.sort((a, b) => b.uploadedAt - a.uploadedAt));
+  };
   
-  return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
-    const memories = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-      id: doc.id,
-      ...doc.data()
-    } as UserMemory));
-    callback(memories);
-  });
+  onValue(memoriesRef, handleValue);
+  return () => off(memoriesRef, 'value', handleValue);
 }
 
 // Subscribe to all pending memories (for admin)
 export function subscribeToPendingMemories(
   callback: (memories: UserMemory[]) => void
 ): () => void {
-  const memoriesRef = collection(db, 'userMemories');
-  const q = query(
-    memoriesRef,
-    where('festivalYear', '==', FESTIVAL_CONFIG.year),
-    where('isApproved', '==', false),
-    orderBy('uploadedAt', 'desc')
-  );
+  const memoriesRef = ref(db, 'userMemories');
   
-  return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
-    const memories = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-      id: doc.id,
-      ...doc.data()
-    } as UserMemory));
-    callback(memories);
-  });
+  const handleValue = (snapshot: import('firebase/database').DataSnapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+    
+    const memories: UserMemory[] = [];
+    snapshot.forEach((child) => {
+      const data = child.val();
+      if (data.festivalYear === FESTIVAL_CONFIG.year && !data.isApproved) {
+        memories.push({ id: child.key, ...data });
+      }
+    });
+    
+    callback(memories.sort((a, b) => b.uploadedAt - a.uploadedAt));
+  };
+  
+  onValue(memoriesRef, handleValue);
+  return () => off(memoriesRef, 'value', handleValue);
 }

@@ -13,6 +13,7 @@ import "@livekit/components-styles";
 import { Track } from "livekit-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Radio, Volume2, VolumeX, Maximize2, Minimize2 } from "lucide-react";
+import { updateViewerCount } from "@/lib/livestreamService";
 
 interface LiveStreamViewerProps {
   roomName: string;
@@ -95,10 +96,17 @@ function ViewerControls({ onLeave }: { onLeave?: () => void }) {
 }
 
 // Inner component that has access to LiveKit context
-function ViewerInner({ onLeave }: { onLeave?: () => void }) {
+function ViewerInner({ onLeave, roomName }: { onLeave?: () => void; roomName: string }) {
+  const participants = useParticipants();
   const tracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], {
     onlySubscribed: true,
   });
+  
+  // Update viewer count in Firebase when participants change
+  useEffect(() => {
+    const viewerCount = Math.max(0, participants.length - 1); // Exclude the host
+    updateViewerCount(roomName, viewerCount).catch(console.error);
+  }, [participants.length, roomName]);
   
   const videoTrack = tracks.find(
     (track) => track.publication?.kind === "video"
@@ -208,7 +216,7 @@ export default function LiveStreamViewer({
         audio={false}
         style={{ height: '100%', width: '100%' }}
       >
-        <ViewerInner onLeave={onLeave} />
+        <ViewerInner onLeave={onLeave} roomName={roomName} />
       </LiveKitRoom>
     </div>
   );
