@@ -209,7 +209,7 @@ export default function PhotoMandala() {
                           onClick={() => setSelectedPhoto(photo)}
                           className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-white/20 focus:border-amber-500 relative"
                         >
-                          <NextImage src={photo.url} alt={photo.caption} fill className="object-cover" />
+                          <NextImage src={photo.url} alt={photo.caption || ''} fill className="object-cover" />
                         </button>
                       ))}
                     </div>
