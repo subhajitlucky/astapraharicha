@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Noto_Sans_Oriya } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const spaceGrotesk = Space_Grotesk({ 
   subsets: ["latin"],
@@ -38,6 +39,7 @@ export default function RootLayout({
     <html lang="en" className={`${spaceGrotesk.variable} ${notoOriya.variable}`}>
       <body className="bg-void text-white overflow-x-hidden antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   );
